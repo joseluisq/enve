@@ -1,0 +1,10 @@
+*bin*
+*debug*
+vendor
+*.tmp
+*.txt
+*.log
+*.bin
+*envf*
+*.sh
+*.env

@@ -1,0 +1,35 @@
+project_name: fenv
+dist: bin
+build:
+  main: main.go
+  binary: fenv
+  goos:
+    - linux
+    - darwin
+  goarch:
+    - amd64
+  env:
+    - CGO_ENABLED=0
+release:
+  prerelease: auto
+changelog:
+  skip: true
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - Merge pull request
+      - Merge branch
+signs:
+  -
+    cmd: gpg
+    args:
+      - --output
+      - $signature
+      - --detach-sig
+      - $artifact
+    signature: ${artifact}.sig
+    artifacts: none
+snapshot:
+  name_template: "{{ .Tag }}"
