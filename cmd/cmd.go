@@ -51,7 +51,16 @@ func onCommand(c *cli.Context) (err error) {
 
 	if c.NArg() > 0 {
 		args := c.Args().Slice()
-		cmd := exec.Command(args[0], args[1:]...)
+		cmdIn := args[0]
+
+		_, err := exec.LookPath(cmdIn)
+
+		if err != nil {
+			return fmt.Errorf("executable \"%s\" was not found\n%s", cmdIn, err)
+		}
+
+		cmd := exec.Command(cmdIn, args[1:]...)
+
 		cmd.Stderr = os.Stderr
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout

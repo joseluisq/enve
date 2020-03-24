@@ -6,5 +6,5 @@ vendor
 *.log
 *.bin
 *envf*
-*.sh
-*.env
+/*.sh
+/*.env

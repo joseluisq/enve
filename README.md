@@ -1,4 +1,4 @@
-# fenv
+# fenv [![Build Status](https://travis-ci.com/joseluisq/fenv.svg?branch=master)](https://travis-ci.com/joseluisq/fenv)
 
 > Run a program in a modified environment using `.env` files.
 
