@@ -20,6 +20,7 @@ builds:
       - openbsd
     goarch:
       - amd64
+      - 386
       - arm
       - arm64
       - ppc64le
@@ -29,6 +30,7 @@ builds:
       - 5
     ignore:
       - goos: darwin
+        goarch: 386
       - goos: openbsd
         goarch: arm
       - goos: openbsd
@@ -43,6 +45,7 @@ archives:
     replacements:
       darwin: darwin
       linux: linux
+      386: i386
       amd64: x86_64
     files:
       - LICENSE-APACHE
