@@ -1,38 +1,38 @@
-# fenv [![Build Status](https://travis-ci.com/joseluisq/fenv.svg?branch=master)](https://travis-ci.com/joseluisq/fenv)
+# enve [![Build Status](https://travis-ci.com/joseluisq/enve.svg?branch=master)](https://travis-ci.com/joseluisq/enve)
 
-> Run a program in a modified environment using `.env` files.
+> Run a program in a modified environment but using a `.env` file.
 
-**fenv** just sets all environment variables of one `.env` file and run a command.
+**enve** loads all environment variables of a `.env` file and run a command. It can be considered as a counterpart of [GNU env](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html) command.
 
 ## Install
 
 ```sh
-go get -u github.com/joseluisq/fenv
+go get -u github.com/joseluisq/enve
 ```
 
-Release binaries also available on [joseluisq/fenv/releases](https://github.com/joseluisq/fenv/releases)
+Release binaries also available on [joseluisq/enve/releases](https://github.com/joseluisq/enve/releases)
 
 ## Usage
 
 A `.env` file is loaded by default from current working directory.
 
 ```sh
-fenv test.sh
+enve test.sh
 ```
 
 Or a custom `.env` file can be loaded using `--file` (`-f`) flag.
 
 ```sh
-fenv -f dev.env test.sh
+enve -f dev.env test.sh
 ```
 
 ## Options
 
 ```
-$ fenv -h
+$ enve -h
 
 NAME:
-   fenv - run a program in a modified environment using .env files
+   enve - run a program in a modified environment using .env files
 
 USAGE:
    main [global options] command [command options] [arguments...]
@@ -45,6 +45,7 @@ COMMANDS:
 
 GLOBAL OPTIONS:
    --file value, -f value  read in a file of environment variables (default: ".env")
+   --version, -v           shows the current version (default: false)
    --help, -h              show help (default: false)
 ```
 
@@ -52,7 +53,7 @@ GLOBAL OPTIONS:
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in current work by you, as defined in the Apache-2.0 license, shall be dual licensed as described below, without any additional terms or conditions.
 
-Feel free to send some [Pull request](https://github.com/joseluisq/fenv/pulls) or [issue](https://github.com/joseluisq/fenv/issues).
+Feel free to send some [Pull request](https://github.com/joseluisq/enve/pulls) or [issue](https://github.com/joseluisq/enve/issues).
 
 ## License
 

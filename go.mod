@@ -1,4 +1,4 @@
-module github.com/joseluisq/fenv
+module github.com/joseluisq/enve
 
 go 1.14
 

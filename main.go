@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/joseluisq/fenv/cmd"
+	"github.com/joseluisq/enve/cmd"
 )
 
 func main() {

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"sort"
 
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
@@ -13,7 +12,7 @@ import (
 // Execute adds all child commands to the root command and sets flags appropriately.
 func Execute() {
 	app := &cli.App{
-		Name:        "fenv",
+		Name:        "enve",
 		Usage:       "run a program in a modified environment using .env files",
 		Description: "Set all environment variables of one .env file and run `command`.",
 		Flags: []cli.Flag{
@@ -23,12 +22,10 @@ func Execute() {
 				Value:   ".env",
 				Usage:   "read in a file of environment variables",
 			},
+			VersionFlag(),
 		},
 		Action: onCommand,
 	}
-
-	sort.Sort(cli.FlagsByName(app.Flags))
-	sort.Sort(cli.CommandsByName(app.Commands))
 
 	err := app.Run(os.Args)
 
@@ -38,8 +35,16 @@ func Execute() {
 	}
 }
 
-func onCommand(c *cli.Context) (err error) {
-	f := c.String("file")
+func onCommand(ctx *cli.Context) error {
+	// 1. Version flag
+	v := ctx.Bool("version")
+
+	if v {
+		return VersionAction(ctx)
+	}
+
+	// 2. File flag
+	f := ctx.String("file")
 
 	if f != "" {
 		err := godotenv.Load(f)
@@ -49,8 +54,8 @@ func onCommand(c *cli.Context) (err error) {
 		}
 	}
 
-	if c.NArg() > 0 {
-		args := c.Args().Slice()
+	if ctx.NArg() > 0 {
+		args := ctx.Args().Slice()
 		cmdIn := args[0]
 
 		_, err := exec.LookPath(cmdIn)
