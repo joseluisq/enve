@@ -17,19 +17,19 @@ func Execute() {
 	app := &cli.App{
 		Name:        "enve",
 		Usage:       "run a program in a modified environment using .env files",
-		Description: "Set all environment variables of one .env file and run `command`.",
+		Description: "Set all environment variables of one .env file and run a `command`.",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "file",
 				Aliases: []string{"f"},
 				Value:   ".env",
-				Usage:   "read in a file of environment variables",
+				Usage:   "load environment variables from a file path",
 			},
 			&cli.StringFlag{
 				Name:    "output",
 				Aliases: []string{"o"},
 				Value:   "text",
-				Usage:   "output environment variables in specific format",
+				Usage:   "output environment variables in specific format (text, json)",
 			},
 			VersionFlag(),
 		},

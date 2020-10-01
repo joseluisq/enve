@@ -12,7 +12,7 @@
 ```sh
 curl -sSL \
    "https://github.com/joseluisq/enve/releases/download/v1.0.0/enve_v1.0.0_linux_amd64.tar.gz" \
-| tar zxf - -C /usr/local/bin/ enve
+| sudo tar zxf - -C /usr/local/bin/ enve
 ```
 
 Using Go:
@@ -49,14 +49,14 @@ USAGE:
    enve [global options] command [command options] [arguments...]
 
 DESCRIPTION:
-   Set all environment variables of one .env file and run `command`.
+   Set all environment variables of one .env file and run a `command`.
 
 COMMANDS:
    help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --file value, -f value    read in a file of environment variables (default: ".env")
-   --output value, -o value  output environment variables in specific format (default: "text")
+   --file value, -f value    load environment variables from a file path (default: ".env")
+   --output value, -o value  output environment variables in specific format (text, json) (default: "text")
    --version, -v             shows the current version (default: false)
    --help, -h                show help (default: false)
 ```
