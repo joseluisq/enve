@@ -36,6 +36,11 @@ func Execute() {
 }
 
 func onCommand(ctx *cli.Context) error {
+	// 0. If there are not args show all environment variables
+	if ctx.NArg() == 0 {
+		return printAllAction(ctx)
+	}
+
 	// 1. Version flag
 	v := ctx.Bool("version")
 
@@ -54,24 +59,39 @@ func onCommand(ctx *cli.Context) error {
 		}
 	}
 
+	// 3. Execute the given command
 	if ctx.NArg() > 0 {
-		args := ctx.Args().Slice()
-		cmdIn := args[0]
-
-		_, err := exec.LookPath(cmdIn)
-
-		if err != nil {
-			return fmt.Errorf("executable \"%s\" was not found\n%s", cmdIn, err)
-		}
-
-		cmd := exec.Command(cmdIn, args[1:]...)
-
-		cmd.Stderr = os.Stderr
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-
-		return cmd.Run()
+		return execCmdAction(ctx)
 	}
 
 	return nil
+}
+
+// printAllAction prints all environment variables in plain text
+func printAllAction(ctx *cli.Context) (err error) {
+	for _, s := range os.Environ() {
+		fmt.Println(s)
+	}
+
+	return nil
+}
+
+// execCmdAction executes a command along with its env variables
+func execCmdAction(ctx *cli.Context) (err error) {
+	args := ctx.Args().Slice()
+	cmdIn := args[0]
+
+	_, err = exec.LookPath(cmdIn)
+
+	if err != nil {
+		return fmt.Errorf("executable \"%s\" was not found\n%s", cmdIn, err)
+	}
+
+	cmd := exec.Command(cmdIn, args[1:]...)
+
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+
+	return cmd.Run()
 }
