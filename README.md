@@ -6,6 +6,17 @@
 
 ## Install
 
+- **Platforms supported:** `linux`, `darwin`, `freebsd`, `openbsd`
+- **Architectures supported:** `amd64`, `386`, `arm`, `arm64`, `ppc64le`
+
+```sh
+curl -sSL \
+   "https://github.com/joseluisq/enve/releases/download/v1.0.0/enve_v1.0.0_linux_amd64.tar.gz" \
+| tar zxf - -C /usr/local/bin/ enve
+```
+
+Using Go:
+
 ```sh
 go get -u github.com/joseluisq/enve
 ```
