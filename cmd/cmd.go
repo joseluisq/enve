@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
@@ -22,6 +25,12 @@ func Execute() {
 				Value:   ".env",
 				Usage:   "read in a file of environment variables",
 			},
+			&cli.StringFlag{
+				Name:    "output",
+				Aliases: []string{"o"},
+				Value:   "text",
+				Usage:   "output environment variables in specific format",
+			},
 			VersionFlag(),
 		},
 		Action: onCommand,
@@ -36,11 +45,6 @@ func Execute() {
 }
 
 func onCommand(ctx *cli.Context) error {
-	// 0. If there are not args show all environment variables
-	if ctx.NArg() == 0 {
-		return printAllAction(ctx)
-	}
-
 	// 1. Version flag
 	v := ctx.Bool("version")
 
@@ -59,7 +63,19 @@ func onCommand(ctx *cli.Context) error {
 		}
 	}
 
-	// 3. Execute the given command
+	// 3. Output flag
+	output := ctx.String("output")
+
+	if ctx.NArg() == 0 {
+		switch output {
+		case "json":
+			return jsonOutputAction(ctx)
+		default:
+			return textOutputAction(ctx)
+		}
+	}
+
+	// 4. Execute the given command
 	if ctx.NArg() > 0 {
 		return execCmdAction(ctx)
 	}
@@ -67,8 +83,8 @@ func onCommand(ctx *cli.Context) error {
 	return nil
 }
 
-// printAllAction prints all environment variables in plain text
-func printAllAction(ctx *cli.Context) (err error) {
+// textOutputAction prints all environment variables in plain text
+func textOutputAction(ctx *cli.Context) (err error) {
 	for _, s := range os.Environ() {
 		fmt.Println(s)
 	}
@@ -94,4 +110,30 @@ func execCmdAction(ctx *cli.Context) (err error) {
 	cmd.Stdout = os.Stdout
 
 	return cmd.Run()
+}
+
+func jsonOutputAction(ctx *cli.Context) (err error) {
+	jsonstr := ""
+	envs := os.Environ()
+
+	for i, s := range envs {
+		pairs := strings.SplitN(s, "=", 2)
+		sep := ""
+
+		if i < len(envs)-1 {
+			sep = ","
+		}
+
+		val := strings.ReplaceAll(pairs[1], "\"", "\\\"")
+		val = strings.ReplaceAll(val, "\n", "\\n")
+		val = strings.ReplaceAll(val, "\r", "\\r")
+
+		jsonstr += fmt.Sprintf("\"%s\":\"%s\"%s", pairs[0], val, sep)
+	}
+
+	var out bytes.Buffer
+	json.HTMLEscape(&out, []byte("{"+jsonstr+"}"))
+	out.WriteTo(os.Stdout)
+
+	return nil
 }
