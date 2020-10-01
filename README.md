@@ -1,6 +1,6 @@
 # enve [![Build Status](https://travis-ci.com/joseluisq/enve.svg?branch=master)](https://travis-ci.com/joseluisq/enve)
 
-> Run a program in a modified environment but using a `.env` file.
+> Run a program in a modified environment providing a .env file.
 
 **enve** loads all environment variables of a `.env` file and run a command. It can be considered as a counterpart of [GNU env](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html) command.
 
@@ -35,7 +35,7 @@ NAME:
    enve - run a program in a modified environment using .env files
 
 USAGE:
-   main [global options] command [command options] [arguments...]
+   enve [global options] command [command options] [arguments...]
 
 DESCRIPTION:
    Set all environment variables of one .env file and run `command`.
@@ -44,9 +44,10 @@ COMMANDS:
    help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --file value, -f value  read in a file of environment variables (default: ".env")
-   --version, -v           shows the current version (default: false)
-   --help, -h              show help (default: false)
+   --file value, -f value    read in a file of environment variables (default: ".env")
+   --output value, -o value  output environment variables in specific format (default: "text")
+   --version, -v             shows the current version (default: false)
+   --help, -h                show help (default: false)
 ```
 
 ## Contributions
@@ -59,4 +60,4 @@ Feel free to send some [Pull request](https://github.com/joseluisq/enve/pulls) o
 
 This work is primarily distributed under the terms of both the [MIT license](LICENSE-MIT) and the [Apache License (Version 2.0)](LICENSE-APACHE).
 
-© 2020 [Jose Quintana](https://git.io/joseluisq)
+© 2020-present [Jose Quintana](https://git.io/joseluisq)

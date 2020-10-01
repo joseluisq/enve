@@ -57,6 +57,11 @@ lint:
 	@./bin/misspell -error **/*
 .PHONY: lint
 
+dev.release:
+	@go version
+	@goreleaser release --snapshot --rm-dist
+.PHONY: dev.release
+
 
 #######################################
 ########## Production tasks ###########
