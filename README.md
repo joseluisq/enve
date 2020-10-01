@@ -2,7 +2,8 @@
 
 > Run a program in a modified environment providing a .env file.
 
-**enve** loads all environment variables of a `.env` file with exporting support via `text`, `json` or `xml` formats.
+**enve** loads all environment variables from a `.env` file and executes a command. It also has the ability to print environment variables in `text`, `json` or `xml` formats.
+
 It can be considered as a counterpart of [GNU env](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html) command.
 
 ## Install
@@ -26,16 +27,36 @@ Release binaries also available on [joseluisq/enve/releases](https://github.com/
 
 ## Usage
 
-A `.env` file is loaded by default from current working directory.
+By default **enve** will print all environment variables like `env` command. 
+
+```sh
+enve
+# Or its equivalent
+enve --output text
+```
+
+### Executing commands
+
+By default a `.env` file is required and loaded from current working directory.
 
 ```sh
 enve test.sh
 ```
 
-Or a custom `.env` file can be loaded using `--file` (`-f`) flag.
+but it's possible to specify a custom `.env` file using the `--file` or `-f` flags.
 
 ```sh
-enve -f dev.env test.sh
+enve --file dev.env test.sh
+```
+
+### Printing environment variables
+
+**enve** supports `text`, `json` and `xml` formats.
+
+```sh
+enve --output text # or just `enve`
+enve --output json
+enve --output xml
 ```
 
 ## Options
