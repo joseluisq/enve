@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"os"
 	"os/exec"
@@ -11,6 +11,14 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
 )
+
+// Environment defines JSON/XML data structure
+type Environment struct {
+	Env []struct {
+		Name  string `json:"name"`
+		Value string `json:"value"`
+	} `json:"environment"`
+}
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 func Execute() {
@@ -29,7 +37,7 @@ func Execute() {
 				Name:    "output",
 				Aliases: []string{"o"},
 				Value:   "text",
-				Usage:   "output environment variables in specific format (text, json)",
+				Usage:   "output environment variables using text, json or xml format",
 			},
 			VersionFlag(),
 		},
@@ -69,24 +77,17 @@ func onCommand(ctx *cli.Context) error {
 	if ctx.NArg() == 0 {
 		switch output {
 		case "json":
-			return jsonOutputAction(ctx)
+			return jsonPrintAction(ctx)
+		case "xml":
+			return xmlPrintAction(ctx)
 		default:
-			return textOutputAction(ctx)
+			return textPrintAction(ctx)
 		}
 	}
 
 	// 4. Execute the given command
 	if ctx.NArg() > 0 {
 		return execCmdAction(ctx)
-	}
-
-	return nil
-}
-
-// textOutputAction prints all environment variables in plain text
-func textOutputAction(ctx *cli.Context) (err error) {
-	for _, s := range os.Environ() {
-		fmt.Println(s)
 	}
 
 	return nil
@@ -112,7 +113,17 @@ func execCmdAction(ctx *cli.Context) (err error) {
 	return cmd.Run()
 }
 
-func jsonOutputAction(ctx *cli.Context) (err error) {
+// textPrintAction prints all environment variables in plain text
+func textPrintAction(ctx *cli.Context) (err error) {
+	for _, s := range os.Environ() {
+		fmt.Println(s)
+	}
+
+	return nil
+}
+
+// parseJSONFromEnviron decodes (Unmarshal) system environment variables into a JSON struct
+func parseJSONFromEnviron() (jsonu Environment, err error) {
 	jsonstr := ""
 	envs := os.Environ()
 
@@ -127,13 +138,49 @@ func jsonOutputAction(ctx *cli.Context) (err error) {
 		val := strings.ReplaceAll(pairs[1], "\"", "\\\"")
 		val = strings.ReplaceAll(val, "\n", "\\n")
 		val = strings.ReplaceAll(val, "\r", "\\r")
-
-		jsonstr += fmt.Sprintf("\"%s\":\"%s\"%s", pairs[0], val, sep)
+		jsonstr += fmt.Sprintf("{\"name\":\"%s\",\"value\":\"%s\"}%s", pairs[0], val, sep)
 	}
 
-	var out bytes.Buffer
-	json.HTMLEscape(&out, []byte("{"+jsonstr+"}"))
-	out.WriteTo(os.Stdout)
+	jsonb := []byte("{\"environment\":[" + jsonstr + "]}")
+	err = json.Unmarshal(jsonb, &jsonu)
+
+	if err != nil {
+		return jsonu, err
+	}
+
+	return jsonu, nil
+}
+
+// jsonPrintAction prints all environment variables in JSON format
+func jsonPrintAction(ctx *cli.Context) error {
+	jsonu, err := parseJSONFromEnviron()
+	if err != nil {
+		return err
+	}
+
+	jsonb, err := json.Marshal(jsonu)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(string(jsonb))
+
+	return nil
+}
+
+// xmlPrintAction prints all environment variables in XML format
+func xmlPrintAction(ctx *cli.Context) error {
+	jsonu, err := parseJSONFromEnviron()
+	if err != nil {
+		return err
+	}
+
+	xmlb, err := xml.Marshal(jsonu)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + string(xmlb))
 
 	return nil
 }

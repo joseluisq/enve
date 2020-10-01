@@ -2,7 +2,8 @@
 
 > Run a program in a modified environment providing a .env file.
 
-**enve** loads all environment variables of a `.env` file and run a command. It can be considered as a counterpart of [GNU env](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html) command.
+**enve** loads all environment variables of a `.env` file with exporting support via `text`, `json` or `xml` formats.
+It can be considered as a counterpart of [GNU env](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html) command.
 
 ## Install
 
@@ -56,7 +57,7 @@ COMMANDS:
 
 GLOBAL OPTIONS:
    --file value, -f value    load environment variables from a file path (default: ".env")
-   --output value, -o value  output environment variables in specific format (text, json) (default: "text")
+   --output value, -o value  output environment variables using text, json or xml format (default: "text")
    --version, -v             shows the current version (default: false)
    --help, -h                show help (default: false)
 ```
