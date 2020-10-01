@@ -13,7 +13,7 @@ It can be considered as a counterpart of [GNU env](https://www.gnu.org/software/
 
 ```sh
 curl -sSL \
-   "https://github.com/joseluisq/enve/releases/download/v1.0.0/enve_v1.0.0_linux_amd64.tar.gz" \
+   "https://github.com/joseluisq/enve/releases/download/v1.1.0/enve_v1.1.0_linux_amd64.tar.gz" \
 | sudo tar zxf - -C /usr/local/bin/ enve
 ```
 
