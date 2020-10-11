@@ -37,13 +37,13 @@ enve --output text
 
 ### Executing commands
 
-By default a `.env` file is required and loaded from current working directory.
+By default, an optional `.env` file can be loaded from current working directory.
 
 ```sh
 enve test.sh
 ```
 
-but it's possible to specify a custom `.env` file using the `--file` or `-f` flags.
+However it's possible to specify a custom `.env` file using the `--file` or `-f` flags.
 
 ```sh
 enve --file dev.env test.sh
