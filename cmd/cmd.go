@@ -31,7 +31,7 @@ func Execute() {
 				Name:    "file",
 				Aliases: []string{"f"},
 				Value:   ".env",
-				Usage:   "load environment variables from a file path",
+				Usage:   "load environment variables from a file path (optional)",
 			},
 			&cli.StringFlag{
 				Name:    "output",
@@ -52,6 +52,16 @@ func Execute() {
 	}
 }
 
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return !info.IsDir()
+}
+
 func onCommand(ctx *cli.Context) error {
 	// 1. Version flag
 	v := ctx.Bool("version")
@@ -64,10 +74,12 @@ func onCommand(ctx *cli.Context) error {
 	f := ctx.String("file")
 
 	if f != "" {
-		err := godotenv.Load(f)
+		if exist := fileExists(f); exist {
+			err := godotenv.Load(f)
 
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
 		}
 	}
 
