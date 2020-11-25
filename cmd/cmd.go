@@ -13,6 +13,12 @@ import (
 	cli "github.com/joseluisq/cline"
 )
 
+// Build-time application values
+var (
+	versionNumber string = "devel"
+	buildTime     string
+)
+
 // Environment defines JSON/XML data structure
 type Environment struct {
 	Env []struct {
