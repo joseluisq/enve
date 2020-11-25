@@ -9,7 +9,8 @@ import (
 	"strings"
 
 	"github.com/joho/godotenv"
-	"github.com/urfave/cli/v2"
+
+	cli "github.com/joseluisq/cline"
 )
 
 // Environment defines JSON/XML data structure
@@ -22,31 +23,28 @@ type Environment struct {
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 func Execute() {
-	app := &cli.App{
-		Name:        "enve",
-		Usage:       "run a program in a modified environment using .env files",
-		Description: "Set all environment variables of one .env file and run a `command`.",
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "file",
-				Aliases: []string{"f"},
-				Value:   ".env",
-				Usage:   "load environment variables from a file path (optional)",
-			},
-			&cli.StringFlag{
-				Name:    "output",
-				Aliases: []string{"o"},
-				Value:   "text",
-				Usage:   "output environment variables using text, json or xml format",
-			},
-			VersionFlag(),
+	app := cli.New()
+	app.Name = "enve"
+	app.Summary = "run a program in a modified environment using .env files"
+	app.Version = versionNumber
+	app.BuildTime = buildTime
+	app.Flags = []cli.Flag{
+		cli.FlagString{
+			Name:    "file",
+			Aliases: []string{"f"},
+			Value:   ".env",
+			Summary: "load environment variables from a file path (optional)",
 		},
-		Action: onCommand,
+		cli.FlagString{
+			Name:    "output",
+			Aliases: []string{"o"},
+			Value:   "text",
+			Summary: "output environment variables using text, json or xml format",
+		},
 	}
+	app.Handler = onCommand
 
-	err := app.Run(os.Args)
-
-	if err != nil {
+	if err := app.Run(os.Args); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -62,75 +60,60 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-func onCommand(ctx *cli.Context) error {
-	// 1. Version flag
-	v := ctx.Bool("version")
-
-	if v {
-		return VersionAction(ctx)
-	}
-
+func onCommand(ctx *cli.AppContext) error {
 	// 2. File flag
-	f := ctx.String("file")
-
+	f := ctx.Flags.String("file")
 	if f != "" {
 		if exist := fileExists(f); exist {
 			err := godotenv.Load(f)
-
 			if err != nil {
 				return err
 			}
 		}
 	}
 
-	// 3. Output flag
-	output := ctx.String("output")
-
-	if ctx.NArg() == 0 {
-		switch output {
-		case "json":
-			return jsonPrintAction(ctx)
-		case "xml":
-			return xmlPrintAction(ctx)
-		default:
-			return textPrintAction(ctx)
-		}
-	}
+	tArgs := ctx.TailArgs
 
 	// 4. Execute the given command
-	if ctx.NArg() > 0 {
-		return execCmdAction(ctx)
+	if len(tArgs) > 0 {
+		return execCmdAction(tArgs)
+	}
+
+	output := ctx.Flags.String("output")
+
+	// 3. Output flag
+	switch output {
+	case "json":
+		return jsonPrintAction()
+	case "xml":
+		return xmlPrintAction()
+	case "text":
+		return textPrintAction()
 	}
 
 	return nil
 }
 
 // execCmdAction executes a command along with its env variables
-func execCmdAction(ctx *cli.Context) (err error) {
-	args := ctx.Args().Slice()
-	cmdIn := args[0]
-
+func execCmdAction(tArgs []string) (err error) {
+	cmdIn := tArgs[0]
 	_, err = exec.LookPath(cmdIn)
-
 	if err != nil {
 		return fmt.Errorf("executable \"%s\" was not found\n%s", cmdIn, err)
 	}
 
-	cmd := exec.Command(cmdIn, args[1:]...)
-
+	cmd := exec.Command(cmdIn, tArgs[1:]...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
-
 	return cmd.Run()
 }
 
 // textPrintAction prints all environment variables in plain text
-func textPrintAction(ctx *cli.Context) (err error) {
+func textPrintAction() (err error) {
 	for _, s := range os.Environ() {
 		fmt.Println(s)
 	}
-
 	return nil
 }
 
@@ -164,7 +147,7 @@ func parseJSONFromEnviron() (jsonu Environment, err error) {
 }
 
 // jsonPrintAction prints all environment variables in JSON format
-func jsonPrintAction(ctx *cli.Context) error {
+func jsonPrintAction() error {
 	jsonu, err := parseJSONFromEnviron()
 	if err != nil {
 		return err
@@ -176,12 +159,11 @@ func jsonPrintAction(ctx *cli.Context) error {
 	}
 
 	fmt.Println(string(jsonb))
-
 	return nil
 }
 
 // xmlPrintAction prints all environment variables in XML format
-func xmlPrintAction(ctx *cli.Context) error {
+func xmlPrintAction() error {
 	jsonu, err := parseJSONFromEnviron()
 	if err != nil {
 		return err
@@ -193,6 +175,5 @@ func xmlPrintAction(ctx *cli.Context) error {
 	}
 
 	fmt.Println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + string(xmlb))
-
 	return nil
 }
