@@ -1,4 +1,4 @@
-# enve [![Build Status](https://travis-ci.com/joseluisq/enve.svg?branch=master)](https://travis-ci.com/joseluisq/enve)
+# enve [![Build Status](https://travis-ci.com/joseluisq/enve.svg?branch=master)](https://travis-ci.com/joseluisq/enve) [![PkgGoDev](https://pkg.go.dev/badge/github.com/joseluisq/enve)](https://pkg.go.dev/github.com/joseluisq/enve)
 
 > Run a program in a modified environment providing a .env file.
 
