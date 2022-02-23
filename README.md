@@ -62,25 +62,17 @@ enve --output xml
 ## Options
 
 ```
-$ enve -h
-
-NAME:
-   enve - run a program in a modified environment using .env files
+$ enve 1.2.0
+Run a program in a modified environment using .env files
 
 USAGE:
-   enve [global options] command [command options] [arguments...]
+   enve [OPTIONS] COMMAND
 
-DESCRIPTION:
-   Set all environment variables of one .env file and run a `command`.
-
-COMMANDS:
-   help, h  Shows a list of commands or help for one command
-
-GLOBAL OPTIONS:
-   --file value, -f value    load environment variables from a file path (default: ".env")
-   --output value, -o value  output environment variables using text, json or xml format (default: "text")
-   --version, -v             shows the current version (default: false)
-   --help, -h                show help (default: false)
+OPTIONS:
+   -f --file      Load environment variables from a file path (optional) [default: .env]
+   -o --output    Output environment variables using text, json or xml format [default: text]
+   -h --help      Prints help information
+   -v --version   Prints version information
 ```
 
 ## Contributions
