@@ -1,6 +1,6 @@
-# enve [![Build Status](https://travis-ci.com/joseluisq/enve.svg?branch=master)](https://travis-ci.com/joseluisq/enve) [![PkgGoDev](https://pkg.go.dev/badge/github.com/joseluisq/enve)](https://pkg.go.dev/github.com/joseluisq/enve)
+# Enve ![devel](https://github.com/joseluisq/enve/workflows/devel/badge.svg) [![PkgGoDev](https://pkg.go.dev/badge/github.com/joseluisq/enve)](https://pkg.go.dev/github.com/joseluisq/enve)
 
-> Run a program in a modified environment providing a .env file.
+> Run a program in a modified environment providing a `.env` file.
 
 **enve** loads all environment variables from a `.env` file and executes a command. It also has the ability to print environment variables in `text`, `json` or `xml` formats.
 

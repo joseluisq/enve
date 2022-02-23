@@ -1,0 +1,51 @@
+name: devel
+
+on: [push, pull_request]
+
+env:
+  GO111MODULE: on
+  GOPROXY: "https://proxy.golang.org"
+
+jobs:
+  test:
+    name: Tests
+    strategy:
+      fail-fast: false
+      matrix:
+        go: [1.15.x, 1.16.x, 1.17.x]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os}}
+    steps:
+      - name: Install
+        uses: actions/setup-go@v1
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Tests
+        run: go test $(go list ./... | grep -v /examples) -v -timeout 30s -race -coverprofile=coverage.txt -covermode=atomic
+      - name: Coverage
+        uses: codecov/codecov-action@v1
+        with:
+          flags: unittests
+          verbose: true
+          name: codecov-cline
+      - name: Environment
+        id: vars
+        run: |
+          printf "Using go at: $(which go)\n"
+          printf "Go version: $(go version)\n"
+          printf "\n\nGo environment:\n\n"
+          go env
+          printf "\n\nSystem environment:\n\n"
+          env
+          # Calculate the short SHA1 hash of the git commit
+          echo "::set-output name=short_sha::$(git rev-parse --short HEAD)"
+          echo "::set-output name=go_cache::$(go env GOCACHE)"
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.vars.outputs.go_cache }}
+          key: ${{ runner.os }}-${{ matrix.go }}-go-ci-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.go }}-go-ci
