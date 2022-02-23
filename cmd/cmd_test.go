@@ -47,7 +47,7 @@ func TestPlainEnv(t *testing.T) {
 		t.Error("error trying to read the .env file")
 	}
 
-	actual := strings.Trim(string(out.Bytes()), "\n")
+	actual := strings.Trim(out.String(), "\n")
 
 	if expected != actual {
 		t.Error("one or more env keys have wrong values")

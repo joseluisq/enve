@@ -57,39 +57,48 @@ func Execute() {
 
 func appHandler(ctx *cli.AppContext) error {
 	flags := ctx.Flags
-	tailArgs := ctx.TailArgs
 
 	// 1. Load a .env file if it's available
 	var err error = nil
-	file := flags.String("file")
-	found := fileExists(file)
-	fileProvided := flags.IsProvidedFlag("file")
+	file, err := flags.String("file")
+	if err != nil {
+		return err
+	}
+	fileProvided := file.IsProvided()
+	filePath := file.Value()
+	fileFound := fileExists(filePath)
 
 	if fileProvided {
-		if file == "" {
-			return fmt.Errorf("File path was empty or not provided")
+		if filePath == "" {
+			return fmt.Errorf("file path was empty or not provided")
 		}
-		if !found {
-			return fmt.Errorf("File path was not found or inaccessible")
+		if !fileFound {
+			return fmt.Errorf("file path was not found or inaccessible")
 		}
-		err = godotenv.Load(file)
-	} else if found {
-		err = godotenv.Load(file)
+		err = godotenv.Load(filePath)
+	} else if fileFound {
+		err = godotenv.Load(filePath)
 	}
 	if err != nil {
-		return fmt.Errorf("Env file: %v", err)
+		return fmt.Errorf("env file: %v", err)
 	}
 
+	tailArgs := ctx.TailArgs
+
 	// 2. Print all env variables in text format by default
-	providedFlags := len(flags.GetProvidedFlags())
+	providedFlags := len(flags.GetProvided())
 	if (providedFlags == 0 && len(tailArgs) == 0) ||
 		(providedFlags == 1 && len(tailArgs) == 0 && fileProvided) {
 		return printEnvText()
 	}
 
-	// 3. Output flag
-	if flags.IsProvidedFlag("output") {
-		out := flags.String("output")
+	// 3. Output
+	output, err := flags.String("output")
+	if err != nil {
+		return err
+	}
+	if output.IsProvided() {
+		out := output.Value()
 		switch out {
 		case "json":
 			return printEnvJSON()
@@ -99,9 +108,9 @@ func appHandler(ctx *cli.AppContext) error {
 			return printEnvText()
 		default:
 			if out == "" {
-				return fmt.Errorf("Output format was empty or not provided")
+				return fmt.Errorf("output format was empty or not provided")
 			}
-			return fmt.Errorf("Format `%s` is not supported output", out)
+			return fmt.Errorf("format `%s` is not a supported output", out)
 		}
 	}
 
