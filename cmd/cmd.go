@@ -66,17 +66,14 @@ func appHandler(ctx *cli.AppContext) error {
 	}
 	fileProvided := file.IsProvided()
 	filePath := file.Value()
+	if fileProvided && filePath == "" {
+		return fmt.Errorf("file path was empty or not provided")
+	}
 	fileFound := fileExists(filePath)
-
-	if fileProvided {
-		if filePath == "" {
-			return fmt.Errorf("file path was empty or not provided")
-		}
-		if !fileFound {
-			return fmt.Errorf("file path was not found or inaccessible")
-		}
-		err = godotenv.Load(filePath)
-	} else if fileFound {
+	if fileProvided && !fileFound {
+		return fmt.Errorf("file path was not found or inaccessible")
+	}
+	if fileFound {
 		err = godotenv.Load(filePath)
 	}
 	if err != nil {
