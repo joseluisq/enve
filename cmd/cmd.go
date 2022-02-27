@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -127,20 +126,6 @@ func fileExists(filename string) bool {
 		}
 	}
 	return !info.IsDir()
-}
-
-// execProdivedCmd executes a command along with its env variables
-func execProdivedCmd(tArgs []string) (err error) {
-	cmdIn := tArgs[0]
-	_, err = exec.LookPath(cmdIn)
-	if err != nil {
-		return fmt.Errorf("executable \"%s\" was not found\n%s", cmdIn, err)
-	}
-	cmd := exec.Command(cmdIn, tArgs[1:]...)
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	return cmd.Run()
 }
 
 // printEnvText prints all environment variables in plain text

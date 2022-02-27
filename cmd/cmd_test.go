@@ -1,3 +1,6 @@
+//go:build !windows
+// +build !windows
+
 package cmd
 
 import (
@@ -44,7 +47,7 @@ func TestPlainEnv(t *testing.T) {
 	err = cmd.Run()
 
 	if err != nil {
-		t.Error("error trying to read the .env file")
+		t.Error("error trying to read the .env file.", err)
 	}
 
 	actual := strings.Trim(out.String(), "\n")

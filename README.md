@@ -2,18 +2,18 @@
 
 > Run a program in a modified environment providing a `.env` file.
 
-**enve** loads all environment variables from a `.env` file and executes a command. It also has the ability to print environment variables in `text`, `json` or `xml` formats.
+**Enve** loads all environment variables from a `.env` file and executes a command. It also has the ability to print environment variables in `text`, `json` or `xml` formats.
 
 It can be considered as a counterpart of [GNU env](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html) command.
 
 ## Install
 
-- **Platforms supported:** `linux`, `darwin`, `freebsd`, `openbsd`
+- **Platforms supported:** `linux`, `darwin`, `windows`, `freebsd`, `openbsd`
 - **Architectures supported:** `amd64`, `386`, `arm`, `arm64`, `ppc64le`
 
 ```sh
 curl -sSL \
-   "https://github.com/joseluisq/enve/releases/download/v1.2.0/enve_v1.2.0_linux_amd64.tar.gz" \
+   "https://github.com/joseluisq/enve/releases/download/v1.3.0/enve_v1.3.0_linux_amd64.tar.gz" \
 | sudo tar zxf - -C /usr/local/bin/ enve
 ```
 
@@ -62,7 +62,7 @@ enve --output xml
 ## Options
 
 ```
-$ enve 1.2.0
+$ enve 1.3.0
 Run a program in a modified environment using .env files
 
 USAGE:

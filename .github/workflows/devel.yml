@@ -19,7 +19,7 @@ jobs:
         os:
           - ubuntu-20.04
           - macos-11
-          # - windows-2019
+          - windows-2019
     runs-on: ${{ matrix.os}}
     steps:
       - name: Install
@@ -29,7 +29,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Tests
-        run: go test $(go list ./... | grep -v /examples) -v -timeout 30s -race -coverprofile=coverage.txt -covermode=atomic
+        run: go test ./... -v -timeout 30s -coverprofile=coverage.txt -covermode=atomic
       - name: Coverage
         uses: codecov/codecov-action@v1
         with:
