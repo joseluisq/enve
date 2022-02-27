@@ -13,7 +13,7 @@ It can be considered as a counterpart of [GNU env](https://www.gnu.org/software/
 
 ```sh
 curl -sSL \
-   "https://github.com/joseluisq/enve/releases/download/v1.3.0/enve_v1.3.0_linux_amd64.tar.gz" \
+   "https://github.com/joseluisq/enve/releases/download/v1.4.0/enve_v1.4.0_linux_amd64.tar.gz" \
 | sudo tar zxf - -C /usr/local/bin/ enve
 ```
 
@@ -62,7 +62,7 @@ enve --output xml
 ## Options
 
 ```
-$ enve 1.3.0
+$ enve 1.4.0
 Run a program in a modified environment using .env files
 
 USAGE:
