@@ -148,6 +148,7 @@ func parseJSONFromEnviron() (jsonu Environment, err error) {
 		}
 		val := strings.ReplaceAll(pairs[1], "\"", "\\\"")
 		val = strings.ReplaceAll(val, "\n", "\\n")
+		val = strings.ReplaceAll(val, "\\", "\\\\")
 		val = strings.ReplaceAll(val, "\r", "\\r")
 		jsonstr += fmt.Sprintf("{\"name\":\"%s\",\"value\":\"%s\"}%s", pairs[0], val, sep)
 	}
