@@ -2,7 +2,8 @@
 
 > Run a program in a modified environment providing a `.env` file.
 
-**Enve** loads all environment variables from a `.env` file and executes a command. It also has the ability to print environment variables in `text`, `json` or `xml` formats.
+**Enve** is a cross-platform tool which can load environment variables from a [`.env` file](https://www.ibm.com/docs/en/aix/7.2?topic=files-env-file) and execute a given command.
+It also has the ability to output environment variables in `text`, `json` or `xml` format.
 
 It can be considered as a counterpart of [GNU env](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html) command.
 
