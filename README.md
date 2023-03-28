@@ -21,7 +21,7 @@ curl -sSL \
 Using Go:
 
 ```sh
-go get -u github.com/joseluisq/enve
+go install github.com/joseluisq/enve@latest
 ```
 
 Release binaries also available on [joseluisq/enve/releases](https://github.com/joseluisq/enve/releases)
