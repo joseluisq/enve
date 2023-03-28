@@ -1,4 +1,4 @@
-github.com/joho/godotenv v1.4.0 h1:3l4+N6zfMWnkbPEXKng2o2/MR5mSwTrBih4ZEkkz1lg=
-github.com/joho/godotenv v1.4.0/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
+github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
+github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
 github.com/joseluisq/cline v0.1.0 h1:vv5bkJmTYsEdpcMNNpQJRovGEjbhAWvh0JH8dCtTtV8=
 github.com/joseluisq/cline v0.1.0/go.mod h1:OHx3HRPOMpaxrkgR6pNdPCdcOh55WhP2nT7OiSFLLkA=

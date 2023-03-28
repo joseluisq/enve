@@ -1,8 +1,8 @@
 module github.com/joseluisq/enve
 
-go 1.15
+go 1.19
 
 require (
-	github.com/joho/godotenv v1.4.0
+	github.com/joho/godotenv v1.5.1
 	github.com/joseluisq/cline v0.1.0
 )
