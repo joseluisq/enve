@@ -76,8 +76,8 @@ prod.release:
 	set -u
 
 	@go version
-	@git tag $(GIT_TAG)
-	@goreleaser release --rm-dist
+	@git tag $(GIT_TAG) --sign -m "$(GIT_TAG)"
+	@goreleaser release --clean --skip=publish --skip=validate
 .ONESHELL: prod.release
 
 prod.release.ci:
@@ -85,6 +85,6 @@ prod.release.ci:
 	set -u
 
 	@go version
-	@git tag $(DRONE_TAG)
+	@git tag $(GIT_TAG) --sign -m "$(GIT_TAG)"
 	@curl -sL https://git.io/goreleaser | bash
 .ONESHELL: prod.release.ci

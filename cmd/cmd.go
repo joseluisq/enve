@@ -15,6 +15,7 @@ import (
 var (
 	versionNumber string = "devel"
 	buildTime     string
+	buildCommit   string
 )
 
 // Environment defines JSON/XML data structure
@@ -32,6 +33,7 @@ func Execute() {
 	app.Summary = "Run a program in a modified environment using .env files"
 	app.Version = versionNumber
 	app.BuildTime = buildTime
+	app.BuildCommit = buildCommit
 	app.Flags = []cli.Flag{
 		cli.FlagString{
 			Name:    "file",

@@ -2,8 +2,8 @@
 
 > Run a program in a modified environment providing a `.env` file.
 
-**Enve** is a cross-platform tool which can load environment variables from a [`.env` file](https://www.ibm.com/docs/en/aix/7.2?topic=files-env-file) and execute a given command.
-It also has the ability to output environment variables in `text`, `json` or `xml` format.
+**Enve** is a cross-platform tool that can load environment variables from a [`.env` file](https://www.ibm.com/docs/en/aix/7.2?topic=files-env-file) and execute a given command.
+It also can output environment variables in `text`, `json` or `xml` format.
 
 It can be considered as a counterpart of [GNU env](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html) command.
 
@@ -14,8 +14,8 @@ It can be considered as a counterpart of [GNU env](https://www.gnu.org/software/
 
 ```sh
 curl -sSL \
-   "https://github.com/joseluisq/enve/releases/download/v1.4.1/enve_v1.4.1_linux_amd64.tar.gz" \
-| sudo tar zxf - -C /usr/local/bin/ enve
+   "https://github.com/joseluisq/enve/releases/download/v1.4.2/enve_v1.4.2_linux_amd64.tar.gz" \
+   | sudo tar zxf - -C /usr/local/bin/ enve
 ```
 
 Using Go:
@@ -28,7 +28,7 @@ Release binaries also available on [joseluisq/enve/releases](https://github.com/
 
 ## Usage
 
-By default **enve** will print all environment variables like `env` command. 
+By default, **enve** will print all environment variables like `env` command. 
 
 ```sh
 enve
@@ -38,7 +38,7 @@ enve --output text
 
 ### Executing commands
 
-By default, an optional `.env` file can be loaded from current working directory.
+By default, an optional `.env` file can be loaded from the current working directory.
 
 ```sh
 enve test.sh
@@ -63,7 +63,7 @@ enve --output xml
 ## Options
 
 ```
-$ enve 1.4.1
+$ enve 1.4.2
 Run a program in a modified environment using .env files
 
 USAGE:
@@ -80,10 +80,10 @@ OPTIONS:
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in current work by you, as defined in the Apache-2.0 license, shall be dual licensed as described below, without any additional terms or conditions.
 
-Feel free to send some [Pull request](https://github.com/joseluisq/enve/pulls) or [issue](https://github.com/joseluisq/enve/issues).
+Feel free to send some [Pull request](https://github.com/joseluisq/enve/pulls) or file an [issue](https://github.com/joseluisq/enve/issues).
 
 ## License
 
 This work is primarily distributed under the terms of both the [MIT license](LICENSE-MIT) and the [Apache License (Version 2.0)](LICENSE-APACHE).
 
-© 2020-present [Jose Quintana](https://git.io/joseluisq)
+© 2020-present [Jose Quintana](https://joseluisq.net)
