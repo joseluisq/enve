@@ -8,3 +8,6 @@ vendor
 *envf*
 /*.sh
 /*.env
+.DS_Store
+
+dist/
