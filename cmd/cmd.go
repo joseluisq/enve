@@ -47,6 +47,12 @@ func Execute() {
 			Value:   "text",
 			Summary: "Output environment variables using text, json or xml format",
 		},
+		cli.FlagBool{
+			Name:    "overwrite",
+			Aliases: []string{"w"},
+			Value:   false,
+			Summary: "Overwrite environment variables if already set",
+		},
 	}
 	app.Handler = appHandler
 
@@ -65,6 +71,15 @@ func appHandler(ctx *cli.AppContext) error {
 	if err != nil {
 		return err
 	}
+	overwrite, err := flags.Bool("overwrite")
+	if err != nil {
+		return err
+	}
+
+	overwriteValue, err := overwrite.Value()
+	if err != nil {
+		return err
+	}
 	fileProvided := file.IsProvided()
 	filePath := file.Value()
 	if fileProvided && filePath == "" {
@@ -75,7 +90,11 @@ func appHandler(ctx *cli.AppContext) error {
 		return fmt.Errorf("file path was not found or inaccessible")
 	}
 	if fileFound {
-		err = godotenv.Load(filePath)
+		if overwriteValue {
+			err = godotenv.Overload(filePath)
+		} else {
+			err = godotenv.Load(filePath)
+		}
 	}
 	if err != nil {
 		return fmt.Errorf("env file: %v", err)
