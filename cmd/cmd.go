@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -71,15 +72,7 @@ func appHandler(ctx *cli.AppContext) error {
 	if err != nil {
 		return err
 	}
-	overwrite, err := flags.Bool("overwrite")
-	if err != nil {
-		return err
-	}
 
-	overwriteValue, err := overwrite.Value()
-	if err != nil {
-		return err
-	}
 	fileProvided := file.IsProvided()
 	filePath := file.Value()
 	if fileProvided && filePath == "" {
@@ -89,6 +82,19 @@ func appHandler(ctx *cli.AppContext) error {
 	if fileProvided && !fileFound {
 		return fmt.Errorf("file path was not found or inaccessible")
 	}
+
+	overwrite, err := flags.Bool("overwrite")
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	overwriteValue, err := overwrite.Value()
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
 	if fileFound {
 		if overwriteValue {
 			err = godotenv.Overload(filePath)
@@ -105,7 +111,7 @@ func appHandler(ctx *cli.AppContext) error {
 	// 2. Print all env variables in text format by default
 	providedFlags := len(flags.GetProvided())
 	if (providedFlags == 0 && len(tailArgs) == 0) ||
-		(providedFlags == 1 && len(tailArgs) == 0 && fileProvided) {
+		(providedFlags <= 2 && len(tailArgs) == 0 && fileProvided) {
 		return printEnvText()
 	}
 
