@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -85,13 +84,11 @@ func appHandler(ctx *cli.AppContext) error {
 
 	overwrite, err := flags.Bool("overwrite")
 	if err != nil {
-		log.Fatal(err)
 		return err
 	}
 
 	overwriteValue, err := overwrite.Value()
 	if err != nil {
-		log.Fatal(err)
 		return err
 	}
 
