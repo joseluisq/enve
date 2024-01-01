@@ -14,7 +14,7 @@ It can be considered as a counterpart of [GNU env](https://www.gnu.org/software/
 
 ```sh
 curl -sSL \
-   "https://github.com/joseluisq/enve/releases/download/v1.4.2/enve_v1.4.2_linux_amd64.tar.gz" \
+   "https://github.com/joseluisq/enve/releases/download/v1.5.0/enve_v1.5.0_linux_amd64.tar.gz" \
    | sudo tar zxf - -C /usr/local/bin/ enve
 ```
 
@@ -24,7 +24,7 @@ Using Go:
 go install github.com/joseluisq/enve@latest
 ```
 
-Release binaries also available on [joseluisq/enve/releases](https://github.com/joseluisq/enve/releases)
+Pre-compiled binaries also available on [joseluisq/enve/releases](https://github.com/joseluisq/enve/releases)
 
 ## Usage
 
@@ -63,17 +63,18 @@ enve --output xml
 ## Options
 
 ```
-$ enve 1.4.2
+$ enve 1.5.0
 Run a program in a modified environment using .env files
 
 USAGE:
    enve [OPTIONS] COMMAND
 
 OPTIONS:
-   -f --file      Load environment variables from a file path (optional) [default: .env]
-   -o --output    Output environment variables using text, json or xml format [default: text]
-   -h --help      Prints help information
-   -v --version   Prints version information
+   -f --file        Load environment variables from a file path (optional) [default: .env]
+   -o --output      Output environment variables using text, json or xml format [default: text]
+   -w --overwrite   Overwrite environment variables if already set [default: false]
+   -h --help        Prints help information
+   -v --version     Prints version information
 ```
 
 ## Contributions
