@@ -12,9 +12,9 @@ jobs:
       fail-fast: false
       matrix:
         go:
-          - 1.19.x
-          - 1.20.x
           - 1.21.x
+          - 1.22.x
+          - 1.23.x
         os:
           - ubuntu-22.04
           - macos-12
@@ -22,24 +22,24 @@ jobs:
     runs-on: ${{ matrix.os}}
     steps:
       - name: Install
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Vet
         run: |
           go vet ./...
       - name: Tests
         run: |
           go test ./... -v -timeout 30s -coverprofile=coverage.txt -covermode=atomic
-      - uses: dominikh/staticcheck-action@v1.2.0
+      - uses: dominikh/staticcheck-action@v1
         with:
           version: "latest"
           install-go: false
           cache-key: ${{ matrix.go }}
       - name: Coverage
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v4
         with:
           flags: unittests
           verbose: true
@@ -57,7 +57,7 @@ jobs:
           echo "::set-output name=short_sha::$(git rev-parse --short HEAD)"
           echo "::set-output name=go_cache::$(go env GOCACHE)"
       - name: Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ steps.vars.outputs.go_cache }}
           key: ${{ runner.os }}-${{ matrix.go }}-go-ci-${{ hashFiles('**/go.sum') }}

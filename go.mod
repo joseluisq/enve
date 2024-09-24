@@ -1,6 +1,6 @@
 module github.com/joseluisq/enve
 
-go 1.19
+go 1.21
 
 require (
 	github.com/joho/godotenv v1.5.1
