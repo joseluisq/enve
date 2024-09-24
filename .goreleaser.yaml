@@ -1,3 +1,5 @@
+version: 2
+
 project_name: enve
 
 dist: bin
@@ -48,11 +50,6 @@ archives:
 
 release:
   prerelease: auto
-changelog:
-  skip: true
-
-snapshot:
-  name_template: "{{ .Version }}"
 
 checksum:
   name_template: "{{ .ProjectName }}_v{{ .Version }}_checksums.txt"
