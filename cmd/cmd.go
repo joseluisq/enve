@@ -53,6 +53,11 @@ func Execute() {
 			Value:   false,
 			Summary: "Overwrite environment variables if already set",
 		},
+		cli.FlagString{
+			Name:    "chdir",
+			Aliases: []string{"c"},
+			Summary: "Change currrent working directory",
+		},
 	}
 	app.Handler = appHandler
 
@@ -66,30 +71,24 @@ func appHandler(ctx *cli.AppContext) error {
 	flags := ctx.Flags
 
 	// 1. Load a .env file if it's available
-	fileFound := false
 	file, err := flags.String("file")
 	if err != nil {
 		return err
 	}
 	filePath := file.Value()
-	fileProvided := file.IsProvided()
-	if fileProvided {
-		if err := fileExists(filePath); err != nil {
-			return err
-		}
-		fileFound = true
+	if err := fileExists(filePath); err != nil {
+		return err
 	}
+	fileProvided := file.IsProvided()
 
+	// Overwrite option
 	overwrite, err := flags.Bool("overwrite")
 	if err != nil {
 		return err
 	}
-	overwriteValue, err := overwrite.Value()
-	if err != nil {
+	if overwriteValue, err := overwrite.Value(); err != nil {
 		return err
-	}
-
-	if fileFound {
+	} else {
 		if overwriteValue {
 			if err := godotenv.Overload(filePath); err != nil {
 				return fmt.Errorf("cannot load env file (overwrite): %v", err)
@@ -98,6 +97,19 @@ func appHandler(ctx *cli.AppContext) error {
 			if err := godotenv.Load(filePath); err != nil {
 				return fmt.Errorf("cannot load env file: %v", err)
 			}
+		}
+	}
+
+	// chdir option
+	chdirPath := ""
+	chdir, err := flags.String("chdir")
+	if err != nil {
+		return err
+	}
+	if chdir.IsProvided() {
+		chdirPath = chdir.Value()
+		if err := dirExists(chdirPath); err != nil {
+			return err
 		}
 	}
 
@@ -134,7 +146,7 @@ func appHandler(ctx *cli.AppContext) error {
 
 	// 4. Execute the given command if there is tail args passed
 	if len(tailArgs) > 0 {
-		return execProdivedCmd(tailArgs)
+		return execProdivedCmd(tailArgs, chdirPath)
 	}
 
 	return nil
@@ -149,6 +161,20 @@ func fileExists(filename string) error {
 	} else {
 		if info.IsDir() {
 			return fmt.Errorf("file path is a directory: %s", filename)
+		}
+		return nil
+	}
+}
+
+func dirExists(dirname string) error {
+	if dirname == "" {
+		return fmt.Errorf("directory path was empty or not provided")
+	}
+	if info, err := os.Stat(dirname); err != nil {
+		return fmt.Errorf("cannot access directory: %s; %v", dirname, err)
+	} else {
+		if !info.IsDir() {
+			return fmt.Errorf("directory path is a file: %s", dirname)
 		}
 		return nil
 	}
