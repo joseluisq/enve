@@ -66,27 +66,24 @@ func appHandler(ctx *cli.AppContext) error {
 	flags := ctx.Flags
 
 	// 1. Load a .env file if it's available
-	var err error = nil
+	fileFound := false
 	file, err := flags.String("file")
 	if err != nil {
 		return err
 	}
-
-	fileProvided := file.IsProvided()
 	filePath := file.Value()
-	if fileProvided && filePath == "" {
-		return fmt.Errorf("file path was empty or not provided")
-	}
-	fileFound := fileExists(filePath)
-	if fileProvided && !fileFound {
-		return fmt.Errorf("file path was not found or inaccessible")
+	fileProvided := file.IsProvided()
+	if fileProvided {
+		if err := fileExists(filePath); err != nil {
+			return err
+		}
+		fileFound = true
 	}
 
 	overwrite, err := flags.Bool("overwrite")
 	if err != nil {
 		return err
 	}
-
 	overwriteValue, err := overwrite.Value()
 	if err != nil {
 		return err
@@ -94,13 +91,14 @@ func appHandler(ctx *cli.AppContext) error {
 
 	if fileFound {
 		if overwriteValue {
-			err = godotenv.Overload(filePath)
+			if err := godotenv.Overload(filePath); err != nil {
+				return fmt.Errorf("cannot load env file (overwrite): %v", err)
+			}
 		} else {
-			err = godotenv.Load(filePath)
+			if err := godotenv.Load(filePath); err != nil {
+				return fmt.Errorf("cannot load env file: %v", err)
+			}
 		}
-	}
-	if err != nil {
-		return fmt.Errorf("env file: %v", err)
 	}
 
 	tailArgs := ctx.TailArgs
@@ -142,14 +140,18 @@ func appHandler(ctx *cli.AppContext) error {
 	return nil
 }
 
-func fileExists(filename string) bool {
-	info, err := os.Stat(filename)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return false
-		}
+func fileExists(filename string) error {
+	if filename == "" {
+		return fmt.Errorf("file path was empty or not provided")
 	}
-	return !info.IsDir()
+	if info, err := os.Stat(filename); err != nil {
+		return fmt.Errorf("cannot access file: %s; %v", filename, err)
+	} else {
+		if info.IsDir() {
+			return fmt.Errorf("file path is a directory: %s", filename)
+		}
+		return nil
+	}
 }
 
 // printEnvText prints all environment variables in plain text
