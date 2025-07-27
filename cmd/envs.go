@@ -10,7 +10,7 @@ import (
 )
 
 // execProdivedCmd executes a command along with its env variables
-func execProdivedCmd(tailArgs []string, chdirPath string) (err error) {
+func execProdivedCmd(tailArgs []string, chdirPath string, newEnv bool, envVars []string) (err error) {
 	cmdIn := tailArgs[0]
 	c, err := exec.LookPath(cmdIn)
 	if err != nil {
@@ -18,6 +18,9 @@ func execProdivedCmd(tailArgs []string, chdirPath string) (err error) {
 	}
 	cmd := exec.Command(c, tailArgs[1:]...)
 	cmd.Dir = chdirPath
+	if newEnv {
+		cmd.Env = envVars
+	}
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
