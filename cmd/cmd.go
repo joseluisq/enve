@@ -58,6 +58,12 @@ func Execute() {
 			Aliases: []string{"c"},
 			Summary: "Change currrent working directory",
 		},
+		cli.FlagBool{
+			Name:    "new-environment",
+			Aliases: []string{"n"},
+			Value:   false,
+			Summary: "Start a new environment containing only variables from the .env file",
+		},
 	}
 	app.Handler = appHandler
 
@@ -68,7 +74,7 @@ func Execute() {
 }
 
 func appHandler(ctx *cli.AppContext) error {
-	flags := ctx.Flags
+	var flags = ctx.Flags
 
 	// 1. Load a .env file if it's available
 	file, err := flags.String("file")
@@ -81,15 +87,31 @@ func appHandler(ctx *cli.AppContext) error {
 	}
 	fileProvided := file.IsProvided()
 
-	// Overwrite option
-	overwrite, err := flags.Bool("overwrite")
+	// new-environment option
+	newEnv, err := flags.Bool("new-environment")
 	if err != nil {
 		return err
 	}
-	if overwriteValue, err := overwrite.Value(); err != nil {
+	newEnvs, err := newEnv.Value()
+	if err != nil {
 		return err
+	}
+
+	var envVars []string
+
+	if newEnvs {
+		if envVars, err = parseEnvFile(filePath); err != nil {
+			return err
+		}
 	} else {
-		if overwriteValue {
+		// Overwrite option
+		overwrite, err := flags.Bool("overwrite")
+		if err != nil {
+			return err
+		}
+		if overwriteValue, err := overwrite.Value(); err != nil {
+			return err
+		} else if overwriteValue {
 			if err := godotenv.Overload(filePath); err != nil {
 				return fmt.Errorf("cannot load env file (overwrite): %v", err)
 			}
@@ -98,6 +120,8 @@ func appHandler(ctx *cli.AppContext) error {
 				return fmt.Errorf("cannot load env file: %v", err)
 			}
 		}
+
+		envVars = os.Environ()
 	}
 
 	// chdir option
@@ -119,7 +143,7 @@ func appHandler(ctx *cli.AppContext) error {
 	providedFlags := len(flags.GetProvided())
 	if (providedFlags == 0 && len(tailArgs) == 0) ||
 		(providedFlags <= 2 && len(tailArgs) == 0 && fileProvided) {
-		return printEnvText()
+		return printEnvText(envVars)
 	}
 
 	// 3. Output
@@ -131,11 +155,11 @@ func appHandler(ctx *cli.AppContext) error {
 		out := output.Value()
 		switch out {
 		case "json":
-			return printEnvJSON()
+			return printEnvJSON(envVars)
 		case "xml":
-			return printEnvXML()
+			return printEnvXML(envVars)
 		case "text":
-			return printEnvText()
+			return printEnvText(envVars)
 		default:
 			if out == "" {
 				return fmt.Errorf("output format was empty or not provided")
@@ -146,7 +170,7 @@ func appHandler(ctx *cli.AppContext) error {
 
 	// 4. Execute the given command if there is tail args passed
 	if len(tailArgs) > 0 {
-		return execProdivedCmd(tailArgs, chdirPath)
+		return execProdivedCmd(tailArgs, chdirPath, newEnvs, envVars)
 	}
 
 	return nil
@@ -180,18 +204,35 @@ func dirExists(dirname string) error {
 	}
 }
 
-// printEnvText prints all environment variables in plain text
-func printEnvText() (err error) {
-	for _, s := range os.Environ() {
+func parseEnvFile(filePath string) ([]string, error) {
+	vars := []string{}
+	f, err := os.Open(filePath)
+	if err != nil {
+		return vars, err
+	}
+	defer f.Close()
+
+	if envMap, err := godotenv.Parse(f); err != nil {
+		return vars, fmt.Errorf("cannot read env file: %v", err)
+	} else {
+		for k, v := range envMap {
+			vars = append(vars, fmt.Sprintf("%s=%s", k, v))
+		}
+	}
+	return vars, nil
+}
+
+// printEnvText prints all environment variables in plain text.
+func printEnvText(envVars []string) (err error) {
+	for _, s := range envVars {
 		fmt.Println(s)
 	}
 	return nil
 }
 
-// parseJSONFromEnviron decodes (Unmarshal) system environment variables into a JSON struct
-func parseJSONFromEnviron() (jsonu Environment, err error) {
+// parseJSONFromEnviron decodes (Unmarshal) a list of environment variables into a JSON struct.
+func parseJSONFromEnviron(envs []string) (jsonu Environment, err error) {
 	jsonstr := ""
-	envs := os.Environ()
 	for i, s := range envs {
 		pairs := strings.SplitN(s, "=", 2)
 		sep := ""
@@ -211,9 +252,9 @@ func parseJSONFromEnviron() (jsonu Environment, err error) {
 	return jsonu, nil
 }
 
-// printEnvJSON prints all environment variables in JSON format
-func printEnvJSON() error {
-	jsonu, err := parseJSONFromEnviron()
+// printEnvJSON prints all environment variables in JSON format.
+func printEnvJSON(envVars []string) error {
+	jsonu, err := parseJSONFromEnviron(envVars)
 	if err != nil {
 		return err
 	}
@@ -225,9 +266,9 @@ func printEnvJSON() error {
 	return nil
 }
 
-// printEnvXML prints all environment variables in XML format
-func printEnvXML() error {
-	jsonu, err := parseJSONFromEnviron()
+// printEnvXML prints all environment variables in XML format.
+func printEnvXML(envVars []string) error {
+	jsonu, err := parseJSONFromEnviron(envVars)
 	if err != nil {
 		return err
 	}
