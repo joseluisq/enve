@@ -64,6 +64,12 @@ func Execute() {
 			Value:   false,
 			Summary: "Start a new environment containing only variables from the .env file",
 		},
+		cli.FlagBool{
+			Name:    "ignore-environment",
+			Aliases: []string{"i"},
+			Value:   false,
+			Summary: "Start with an empty environment",
+		},
 	}
 	app.Handler = appHandler
 
@@ -76,52 +82,65 @@ func Execute() {
 func appHandler(ctx *cli.AppContext) error {
 	var flags = ctx.Flags
 
+	// ignore-environment option
+	ignoreEnvF, err := flags.Bool("ignore-environment")
+	if err != nil {
+		return err
+	}
+	ignoreEnv, err := ignoreEnvF.Value()
+	if err != nil {
+		return err
+	}
+
 	// 1. Load a .env file if it's available
 	file, err := flags.String("file")
 	if err != nil {
 		return err
 	}
-	filePath := file.Value()
-	if err := fileExists(filePath); err != nil {
-		return err
-	}
 	fileProvided := file.IsProvided()
+	filePath := file.Value()
 
 	// new-environment option
-	newEnv, err := flags.Bool("new-environment")
+	newEnvF, err := flags.Bool("new-environment")
 	if err != nil {
 		return err
 	}
-	newEnvs, err := newEnv.Value()
+	newEnv, err := newEnvF.Value()
 	if err != nil {
 		return err
 	}
 
 	var envVars []string
 
-	if newEnvs {
-		if envVars, err = parseEnvFile(filePath); err != nil {
+	if !ignoreEnv {
+		if err := fileExists(filePath); err != nil {
 			return err
-		}
-	} else {
-		// Overwrite option
-		overwrite, err := flags.Bool("overwrite")
-		if err != nil {
-			return err
-		}
-		if overwriteValue, err := overwrite.Value(); err != nil {
-			return err
-		} else if overwriteValue {
-			if err := godotenv.Overload(filePath); err != nil {
-				return fmt.Errorf("cannot load env file (overwrite): %v", err)
-			}
-		} else {
-			if err := godotenv.Load(filePath); err != nil {
-				return fmt.Errorf("cannot load env file: %v", err)
-			}
 		}
 
-		envVars = os.Environ()
+		if newEnv {
+			if envVars, err = parseEnvFile(filePath); err != nil {
+				return err
+			}
+		} else {
+			// Overwrite option
+			overwrite, err := flags.Bool("overwrite")
+			if err != nil {
+				return err
+			}
+			if overwriteValue, err := overwrite.Value(); err != nil {
+				return err
+			} else if overwriteValue {
+				if err := godotenv.Overload(filePath); err != nil {
+					return fmt.Errorf("cannot load env file (overwrite): %v", err)
+				}
+			} else {
+				if err := godotenv.Load(filePath); err != nil {
+					return fmt.Errorf("cannot load env file: %v", err)
+				}
+			}
+
+			envVars = os.Environ()
+		}
 	}
 
 	// chdir option
@@ -170,7 +189,7 @@ func appHandler(ctx *cli.AppContext) error {
 
 	// 4. Execute the given command if there is tail args passed
 	if len(tailArgs) > 0 {
-		return execProdivedCmd(tailArgs, chdirPath, newEnvs, envVars)
+		return execProdivedCmd(tailArgs, chdirPath, newEnv, envVars)
 	}
 
 	return nil
