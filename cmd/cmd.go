@@ -70,6 +70,12 @@ func Execute() {
 			Value:   false,
 			Summary: "Start with an empty environment",
 		},
+		cli.FlagBool{
+			Name:    "no-file",
+			Aliases: []string{"z"},
+			Value:   false,
+			Summary: "Do not load a .env file",
+		},
 	}
 	app.Handler = appHandler
 
@@ -88,6 +94,16 @@ func appHandler(ctx *cli.AppContext) error {
 		return err
 	}
 	ignoreEnv, err := ignoreEnvF.Value()
+	if err != nil {
+		return err
+	}
+
+	// no-file option
+	noFileF, err := flags.Bool("no-file")
+	if err != nil {
+		return err
+	}
+	noFile, err := noFileF.Value()
 	if err != nil {
 		return err
 	}
@@ -113,6 +129,13 @@ func appHandler(ctx *cli.AppContext) error {
 	var envVars []string
 
 	if !ignoreEnv {
+		if noFile {
+			envVars = os.Environ()
+			goto ContinueEnvProcessing
+		}
+
+		// .env file processing
+
 		if err := fileExists(filePath); err != nil {
 			return err
 		}
@@ -142,6 +165,8 @@ func appHandler(ctx *cli.AppContext) error {
 			envVars = os.Environ()
 		}
 	}
+
+ContinueEnvProcessing:
 
 	// chdir option
 	chdirPath := ""
