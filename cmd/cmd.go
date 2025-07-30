@@ -21,7 +21,7 @@ var (
 func Execute() {
 	app := cli.New()
 	app.Name = "enve"
-	app.Summary = "Run a program in a modified environment using .env files"
+	app.Summary = "Run a program in a modified environment providing an optional .env file or variables from stdin"
 	app.Version = versionNumber
 	app.BuildTime = buildTime
 	app.BuildCommit = buildCommit
@@ -53,13 +53,13 @@ func Execute() {
 			Name:    "new-environment",
 			Aliases: []string{"n"},
 			Value:   false,
-			Summary: "Start a new environment containing only variables from the .env file or stdin",
+			Summary: "Start a new environment with only variables from the .env file or stdin",
 		},
 		cli.FlagBool{
 			Name:    "ignore-environment",
 			Aliases: []string{"i"},
 			Value:   false,
-			Summary: "Start with an empty environment",
+			Summary: "Starts with an empty environment, ignoring any existing environment variables",
 		},
 		cli.FlagBool{
 			Name:    "no-file",
@@ -71,7 +71,7 @@ func Execute() {
 			Name:    "stdin",
 			Aliases: []string{"s"},
 			Value:   false,
-			Summary: "Read environment variables from stdin, if use it will ignore the .env file",
+			Summary: "Read only environment variables from stdin and ignore the .env file",
 		},
 	}
 	app.Handler = appHandler
@@ -110,7 +110,6 @@ func appHandler(ctx *cli.AppContext) error {
 	if err != nil {
 		return err
 	}
-	fileProvided := file.IsProvided()
 	filePath := file.Value()
 
 	// new-environment option
@@ -135,19 +134,19 @@ func appHandler(ctx *cli.AppContext) error {
 		return err
 	}
 
-	if stdin {
-		overwriteF, err := flags.Bool("overwrite")
-		if err != nil {
-			return err
-		}
-		overwrite, err := overwriteF.Value()
-		if err != nil {
-			return err
-		}
+	overwriteF, err := flags.Bool("overwrite")
+	if err != nil {
+		return err
+	}
+	overwrite, err := overwriteF.Value()
+	if err != nil {
+		return err
+	}
 
+	if stdin {
 		fi, err := os.Stdin.Stat()
 		if err != nil {
-			return fmt.Errorf("cannot read from stdin: %v", err)
+			return fmt.Errorf("error: cannot read from stdin.\n%v", err)
 		}
 		if (fi.Mode() & os.ModeCharDevice) == 0 {
 			envr := env.FromReader(os.Stdin)
@@ -168,7 +167,7 @@ func appHandler(ctx *cli.AppContext) error {
 					if overwrite {
 						str = " (overwrite)"
 					}
-					return fmt.Errorf("cannot load env from stdin%s: %v", str, err)
+					return fmt.Errorf("error: cannot load env from stdin%s.\n%v", str, err)
 				}
 				envVars = env.Slice(os.Environ())
 			}
@@ -196,20 +195,12 @@ func appHandler(ctx *cli.AppContext) error {
 			}
 			envVars = vmap.Array()
 		} else {
-			overwriteF, err := flags.Bool("overwrite")
-			if err != nil {
-				return err
-			}
-			if overwrite, err := overwriteF.Value(); err != nil {
-				return err
-			} else {
-				if err := envf.Load(overwrite); err != nil {
-					str := ""
-					if overwrite {
-						str = " (overwrite)"
-					}
-					return fmt.Errorf("cannot load env from file%s: %v", str, err)
+			if err := envf.Load(overwrite); err != nil {
+				str := ""
+				if overwrite {
+					str = " (overwrite)"
 				}
+				return fmt.Errorf("error: cannot load env from file '%s'.\n%v", str, err)
 			}
 
 			envVars = env.Slice(os.Environ())
@@ -234,47 +225,48 @@ ContinueEnvProcessing:
 	tailArgs := ctx.TailArgs
 
 	// 2. Print all env variables in text format by default
-	providedFlags := len(flags.GetProvided())
-	if (providedFlags == 0 && len(tailArgs) == 0) ||
-		(providedFlags <= 2 && len(tailArgs) == 0 && fileProvided) {
+	totalFags := len(flags.GetProvided())
+	noFlags := totalFags == 0
+	hasTailArgs := len(tailArgs) > 0
+	hasNoArgs := noFlags && hasTailArgs
+
+	if hasNoArgs {
 		fmt.Println(envVars.Text())
 		return nil
 	}
 
-	// 3. Output
+	// 3. Execute the given command if there is tail args passed
+	if hasTailArgs {
+		return execProdivedCmd(tailArgs, chdirPath, newEnv, envVars)
+	}
+
+	// 4. Output
 	output, err := flags.String("output")
 	if err != nil {
 		return err
 	}
-	if output.IsProvided() {
-		out := output.Value()
-		switch out {
-		case "json":
-			if buf, err := envVars.JSON(); err != nil {
-				return err
-			} else {
-				fmt.Println(string(buf))
-			}
-		case "xml":
-			if buf, err := envVars.XML(); err != nil {
-				return err
-			} else {
-				fmt.Println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + string(buf))
-			}
-		case "text":
-			fmt.Println(envVars.Text())
-			return nil
-		default:
-			if out == "" {
-				return fmt.Errorf("output format was empty or not provided")
-			}
-			return fmt.Errorf("format `%s` is not a supported output", out)
-		}
-	}
 
-	// 4. Execute the given command if there is tail args passed
-	if len(tailArgs) > 0 {
-		return execProdivedCmd(tailArgs, chdirPath, newEnv, envVars)
+	out := output.Value()
+	switch out {
+	case "text":
+		fmt.Println(envVars.Text())
+	case "json":
+		if buf, err := envVars.JSON(); err != nil {
+			return err
+		} else {
+			fmt.Println(string(buf))
+		}
+	case "xml":
+		if buf, err := envVars.XML(); err != nil {
+			return err
+		} else {
+			fmt.Println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + string(buf))
+		}
+	default:
+		if out == "" {
+			return fmt.Errorf("error: output format was empty or not provided")
+		}
+		return fmt.Errorf("error: output format '%s' is not supported", out)
 	}
 
 	return nil
