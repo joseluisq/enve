@@ -4,7 +4,7 @@
 
 **Enve** is a cross-platform tool that can load environment variables from a [`.env` file](https://www.ibm.com/docs/en/aix/7.2?topic=files-env-file) or from standard input (stdin) and run a command with those variables set in the environment.
 
-It also allows you to to output environment variables in `text`, `json` or `xml` format as well as to overwrite existing ones with values from custom a `.env` file or `stdin`.
+It also allows you to output environment variables in `text`, `json` or `xml` format as well as to overwrite existing ones with values from a custom `.env` file or `stdin`.
 
 It can be considered as a counterpart of [GNU env](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html) command.
 
