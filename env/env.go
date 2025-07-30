@@ -71,7 +71,6 @@ func (e *Env) Load(overload bool) error {
 }
 
 func (e *Env) Parse() (Map, error) {
-	defer e.Close()
 	return godotenv.Parse(e.r)
 }
 

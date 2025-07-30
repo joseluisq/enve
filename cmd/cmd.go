@@ -134,6 +134,7 @@ func appHandler(ctx *cli.AppContext) error {
 		return err
 	}
 
+	// overwrite option
 	overwriteF, err := flags.Bool("overwrite")
 	if err != nil {
 		return err
@@ -152,7 +153,7 @@ func appHandler(ctx *cli.AppContext) error {
 			envr := env.FromReader(os.Stdin)
 
 			if ignoreEnv {
-				goto ContinueEnvProcessing
+				goto ContinueEnvProc
 			}
 
 			if newEnv {
@@ -172,14 +173,14 @@ func appHandler(ctx *cli.AppContext) error {
 				envVars = env.Slice(os.Environ())
 			}
 
-			goto ContinueEnvProcessing
+			goto ContinueEnvProc
 		}
 	}
 
 	if !ignoreEnv {
 		if noFile {
 			envVars = env.Slice(os.Environ())
-			goto ContinueEnvProcessing
+			goto ContinueEnvProc
 		}
 
 		// .env file processing
@@ -187,6 +188,7 @@ func appHandler(ctx *cli.AppContext) error {
 		if err != nil {
 			return err
 		}
+		defer envf.Close()
 
 		if newEnv {
 			vmap, err := envf.Parse()
@@ -207,8 +209,7 @@ func appHandler(ctx *cli.AppContext) error {
 		}
 	}
 
-ContinueEnvProcessing:
-
+ContinueEnvProc:
 	// chdir option
 	chdirPath := ""
 	chdir, err := flags.String("chdir")
