@@ -13,7 +13,7 @@ import (
 func execProdivedCmd(tailArgs []string, chdirPath string, newEnv bool, envVars []string) (err error) {
 	ps, err := exec.LookPath("powershell.exe")
 	if err != nil {
-		return fmt.Errorf("executable \"powershell.exe\" was not found\n%s", err)
+		return fmt.Errorf("error: executable 'powershell.exe' was not found.\n%v", err)
 	}
 	args := []string{"-NoProfile", "-NonInteractive", "-Command"}
 	args = append(args, "$ErrorActionPreference = \"Stop\"; ")

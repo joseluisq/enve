@@ -4,10 +4,13 @@ on:
   pull_request:
   push:
     branches:
-    - master
-
-env:
-  GO111MODULE: on
+      - master
+    paths:
+    - .github/workflows/devel.yml
+    - go.mod
+    - go.sum
+    - '**.go'
+    - fixtures/**
 
 jobs:
   test:
@@ -31,23 +34,20 @@ jobs:
           go-version: ${{ matrix.go }}
       - name: Checkout
         uses: actions/checkout@v4
+      - name: format
+        run: |
+          go fmt ./...
       - name: Vet
         run: |
           go vet ./...
       - name: Tests
         run: |
-          go test ./... -v -timeout 30s -coverprofile=coverage.txt -covermode=atomic
+          go test ./... -v --race -timeout 30s -covermode=atomic
       - uses: dominikh/staticcheck-action@v1
         with:
           version: "latest"
           install-go: false
           cache-key: ${{ matrix.go }}
-      - name: Coverage
-        uses: codecov/codecov-action@v4
-        with:
-          flags: unittests
-          verbose: true
-          name: codecov-cline
       - name: Environment
         id: vars
         run: |

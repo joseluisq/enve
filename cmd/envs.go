@@ -14,7 +14,7 @@ func execProdivedCmd(tailArgs []string, chdirPath string, newEnv bool, envVars [
 	cmdIn := tailArgs[0]
 	c, err := exec.LookPath(cmdIn)
 	if err != nil {
-		return fmt.Errorf("executable \"%s\" was not found\n%s", cmdIn, err)
+		return fmt.Errorf("error: executable '%s' was not found.\n%v", cmdIn, err)
 	}
 	cmd := exec.Command(c, tailArgs[1:]...)
 	cmd.Dir = chdirPath
