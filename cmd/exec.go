@@ -9,8 +9,8 @@ import (
 	"os/exec"
 )
 
-// execProdivedCmd executes a command along with its env variables
-func execProdivedCmd(tailArgs []string, chdirPath string, newEnv bool, envVars []string) (err error) {
+// execCmd executes a command along with its env variables
+func execCmd(tailArgs []string, chdirPath string, newEnv bool, envVars []string) (err error) {
 	cmdIn := tailArgs[0]
 	c, err := exec.LookPath(cmdIn)
 	if err != nil {
