@@ -9,8 +9,8 @@ import (
 	"os/exec"
 )
 
-// execProdivedCmd executes a command along with its env variables
-func execProdivedCmd(tailArgs []string, chdirPath string, newEnv bool, envVars []string) (err error) {
+// execCmd executes a command along with its env variables
+func execCmd(tailArgs []string, chdirPath string, newEnv bool, envVars []string) (err error) {
 	ps, err := exec.LookPath("powershell.exe")
 	if err != nil {
 		return fmt.Errorf("error: executable 'powershell.exe' was not found.\n%v", err)
