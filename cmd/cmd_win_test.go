@@ -30,7 +30,7 @@ func TestPlainEnv(t *testing.T) {
 
 	t.Run("should read .env file", func(t *testing.T) {
 		basePath := path.Dir("./../")
-		envFile := basePath + "/fixtures/cmd/.env"
+		envFile := basePath + "/fixtures/cmd/devel.env"
 		psFile := basePath + "/fixtures/cmd/test.ps1"
 
 		cmd := exec.Command(
@@ -75,7 +75,7 @@ func TestOverwriteDisabledPlainEnv(t *testing.T) {
 
 	t.Run("should not overwrite env vars", func(t *testing.T) {
 		basePath := path.Dir("./../")
-		envFile := basePath + "/fixtures/cmd/.env"
+		envFile := basePath + "/fixtures/cmd/devel.env"
 		psFile := basePath + "/fixtures/cmd/test.ps1"
 
 		// Set DB_PROTOCOL as UDP before running the script
@@ -124,7 +124,7 @@ func TestOverwriteEnabledPlainEnv(t *testing.T) {
 
 	t.Run("should overwrite env vars", func(t *testing.T) {
 		basePath := path.Dir("./../")
-		envFile := basePath + "/fixtures/cmd/.env"
+		envFile := basePath + "/fixtures/cmd/devel.env"
 		psFile := basePath + "/fixtures/cmd/test.ps1"
 
 		// Set DB_PROTOCOL as UDP before running the script

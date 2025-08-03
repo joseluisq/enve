@@ -29,13 +29,8 @@ func TestPlainEnv(t *testing.T) {
 	}, "\n")
 
 	t.Run("should read .env file", func(t *testing.T) {
-		cwd, err := os.Getwd()
-		if err != nil {
-			assert.Error(t, err, "error getting current working directory")
-		}
-
-		basePath := path.Dir(cwd)
-		envFile := basePath + "/fixtures/cmd/.env"
+		basePath := path.Dir("./../")
+		envFile := basePath + "/fixtures/cmd/devel.env"
 		bashFile := basePath + "/fixtures/cmd/test.sh"
 
 		cmd := exec.Command("go", "run", basePath+"/main.go", "-f", envFile, bashFile)
@@ -69,13 +64,8 @@ func TestOverwriteDisabledPlainEnv(t *testing.T) {
 	}, "\n")
 
 	t.Run("should not overwrite env vars", func(t *testing.T) {
-		cwd, err := os.Getwd()
-		if err != nil {
-			assert.Error(t, err, "error getting current working directory")
-		}
-
-		basePath := path.Dir(cwd)
-		envFile := basePath + "/fixtures/cmd/.env"
+		basePath := path.Dir("./../")
+		envFile := basePath + "/fixtures/cmd/devel.env"
 		bashFile := basePath + "/fixtures/cmd/test.sh"
 
 		// Set DB_PROTOCOL as UDP before running the script
@@ -114,13 +104,8 @@ func TestOverwriteEnabledPlainEnv(t *testing.T) {
 	}, "\n")
 
 	t.Run("should overwrite env vars", func(t *testing.T) {
-		cwd, err := os.Getwd()
-		if err != nil {
-			assert.Error(t, err, "error getting current working directory")
-		}
-
-		basePath := path.Dir(cwd)
-		envFile := basePath + "/fixtures/cmd/.env"
+		basePath := path.Dir("./../")
+		envFile := basePath + "/fixtures/cmd/devel.env"
 		bashFile := basePath + "/fixtures/cmd/test.sh"
 
 		// Set DB_PROTOCOL as UDP before running the script
