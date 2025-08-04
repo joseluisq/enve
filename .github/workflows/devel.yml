@@ -19,19 +19,21 @@ jobs:
       fail-fast: false
       matrix:
         go:
-          - 1.22.x
           - 1.23.x
           - 1.24.x
         os:
           - ubuntu-22.04
+          - ubuntu-22.04-arm
           - macos-14
           - windows-2022
+          - windows-11-arm
     runs-on: ${{ matrix.os}}
     steps:
       - name: Install
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
+          go-version-file: go.mod
       - name: Checkout
         uses: actions/checkout@v4
       - name: format
@@ -40,26 +42,38 @@ jobs:
       - name: Vet
         run: |
           go vet ./...
-      - name: Tests
-        run: |
-          go test ./... -v --race -timeout 30s -covermode=atomic
       - uses: dominikh/staticcheck-action@v1
         with:
           version: "latest"
           install-go: false
           cache-key: ${{ matrix.go }}
+      - name: Tests
+        run: |
+          go test ./... -v -timeout 30s -covermode=atomic
+      - name: Build
+        shell: bash
+        run: |
+          now=$(date -u '+%Y-%m-%dT%H:%m:%S')
+          go build -v \
+            -ldflags "-s -w \
+            -X 'github.com/joseluisq/enve/cmd.versionNumber=0.0.0' \
+            -X 'github.com/joseluisq/enve/cmd.buildTime=${now}' \
+            -X 'github.com/joseluisq/enve/cmd.buildCommit=${GITHUB_SHA}'" \
+            -a -o bin/enve main.go
+          bin/enve --version
+          bin/enve --help
       - name: Environment
         id: vars
+        shell: bash
         run: |
-          printf "Using go at: $(which go)\n"
-          printf "Go version: $(go version)\n"
-          printf "\n\nGo environment:\n\n"
+          echo "Using go at: $(which go)"
+          echo "Go version: $(go version)"
+          echo "  Go environment:"
           go env
-          printf "\n\nSystem environment:\n\n"
+          echo "  System environment:"
           env
-          # Calculate the short SHA1 hash of the git commit
-          echo "::set-output name=short_sha::$(git rev-parse --short HEAD)"
-          echo "::set-output name=go_cache::$(go env GOCACHE)"
+          echo "short_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "go_cache=$(go env GOCACHE)" >> $GITHUB_OUTPUT
       - name: Cache
         uses: actions/cache@v4
         with:
