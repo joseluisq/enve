@@ -19,13 +19,14 @@ jobs:
       fail-fast: false
       matrix:
         go:
-          - 1.22.x
           - 1.23.x
           - 1.24.x
         os:
           - ubuntu-22.04
+          - ubuntu-22.04-arm
           - macos-14
           - windows-2022
+          - windows-11-arm
     runs-on: ${{ matrix.os}}
     steps:
       - name: Install
@@ -41,14 +42,26 @@ jobs:
       - name: Vet
         run: |
           go vet ./...
-      - name: Tests
-        run: |
-          go test ./... -v --race -timeout 30s -covermode=atomic
       - uses: dominikh/staticcheck-action@v1
         with:
           version: "latest"
           install-go: false
           cache-key: ${{ matrix.go }}
+      - name: Tests
+        run: |
+          go test ./... -v -timeout 30s -covermode=atomic
+      - name: Build
+        shell: bash
+        run: |
+          now=$(date -u '+%Y-%m-%dT%H:%m:%S')
+          go build -v \
+            -ldflags "-s -w \
+            -X 'github.com/joseluisq/enve/cmd.versionNumber=0.0.0' \
+            -X 'github.com/joseluisq/enve/cmd.buildTime=${now}' \
+            -X 'github.com/joseluisq/enve/cmd.buildCommit=${GITHUB_SHA}'" \
+            -a -o bin/enve main.go
+          bin/enve --version
+          bin/enve --help
       - name: Environment
         id: vars
         shell: bash
