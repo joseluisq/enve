@@ -220,28 +220,36 @@ func TestAppHandler_Output(t *testing.T) {
 			oldStdout := os.Stdout
 			r, w, err := os.Pipe()
 			if err != nil {
-				assert.Fail(t, "Failed to create pipe: %v", err)
+				assert.Fail(t, "Failed to create pipe for stdout capture: %v", err)
 			}
 			os.Stdout = w
 
-			if err := app.Run(tt.args); tt.expectedErr != nil {
-				assert.EqualError(
-					t, err, tt.expectedErr.Error(), "app.Run() with args %v failed: %v", tt.args, err,
-				)
-				return
-			} else {
-				assert.NoError(t, err, "app.Run() with args %v failed: %v", tt.args, err)
-			}
+			// Ensure stdout is restored even if the test panics
+			defer func() { os.Stdout = oldStdout }()
 
-			// close writer and restore stdout
-			w.Close()
-			os.Stdout = oldStdout
+			var outCopiedChan = make(chan struct{})
 			var buf bytes.Buffer
-			if _, err := io.Copy(&buf, r); err != nil {
-				assert.Fail(t, "Failed to copy output: %v", err)
-			}
+
+			go func() {
+				defer close(outCopiedChan)
+				// NOTE: `io.Copy` will block here until the writer (w) is closed
+				_, err := io.Copy(&buf, r)
+				assert.NoError(t, err, "Failed to copy output from pipe reader")
+			}()
+
+			runErr := app.Run(tt.args)
+
+			// Close the pipe's writer end to unblock the `io.Copy` in the goroutine above
+			_ = w.Close()
+			<-outCopiedChan
 
 			output := buf.Bytes()
+
+			if tt.expectedErr != nil {
+				assert.EqualError(t, runErr, tt.expectedErr.Error(), "app.Run() with args %v", tt.args)
+			} else {
+				assert.NoError(t, runErr, "app.Run() with args %v", tt.args)
+			}
 
 			if tt.expectedJSON != nil {
 				var vars env.Environment
