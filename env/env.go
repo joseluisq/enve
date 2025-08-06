@@ -9,12 +9,14 @@ import (
 	"github.com/joseluisq/enve/fs"
 )
 
+type EnvironmentVar struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
 // Environment defines JSON/XML data structure
 type Environment struct {
-	Env []struct {
-		Name  string `json:"name"`
-		Value string `json:"value"`
-	} `json:"environment"`
+	Env []EnvironmentVar `json:"environment"`
 }
 
 type EnvFile interface {

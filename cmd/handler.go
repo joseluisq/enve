@@ -107,6 +107,10 @@ func appHandler(ctx *cli.AppContext) error {
 
 	if !ignoreEnv {
 		if noFile {
+			if newEnv || ignoreEnv {
+				goto ContinueEnvProc
+			}
+
 			envVars = env.Slice(os.Environ())
 			goto ContinueEnvProc
 		}
