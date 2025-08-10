@@ -10,8 +10,6 @@ import (
 	"path"
 	"strings"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestPlainEnv(t *testing.T) {
@@ -28,35 +26,31 @@ func TestPlainEnv(t *testing.T) {
 		"DB_ARGS=",
 	}
 
-	t.Run("should read .env file", func(t *testing.T) {
-		basePath := path.Dir("./../")
-		envFile := basePath + "/fixtures/cmd/devel.env"
-		psFile := basePath + "/fixtures/cmd/test.ps1"
+	basePath := path.Dir("./../")
 
-		cmd := exec.Command(
-			"go", "run",
-			basePath+"/main.go",
-			"-f", envFile,
-			"powershell", "-ExecutionPolicy", "Bypass", "-File", psFile,
-		)
+	envFile := basePath + "/fixtures/cmd/devel.env"
+	psFile := basePath + "/fixtures/cmd/test.ps1"
 
-		var out bytes.Buffer
-		cmd.Stderr = os.Stderr
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = &out
+	cmd := exec.Command("go", "run", basePath+"/main.go", "-f", envFile, "powershell", "-ExecutionPolicy", "Bypass", "-File", psFile)
 
-		if err := cmd.Run(); err != nil {
-			assert.Error(t, err, "error trying to read the .env file.")
+	var out bytes.Buffer
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+
+	if err != nil {
+		t.Errorf("error trying to read the .env file.\n %s", err)
+	}
+
+	actual := strings.Split(out.String(), "\n")
+	for i, exp := range expected {
+		act := strings.TrimRight(actual[i], "\r")
+		if exp != act {
+			t.Errorf("actual: [%s] expected: [%s]", act, exp)
 		}
-
-		actual := strings.Split(out.String(), "\n")
-		for i, exp := range expected {
-			act := strings.TrimRight(actual[i], "\r")
-			if exp != act {
-				assert.Equal(t, exp, act, "one or more env keys have wrong values")
-			}
-		}
-	})
+	}
 }
 
 func TestOverwriteDisabledPlainEnv(t *testing.T) {
@@ -73,39 +67,34 @@ func TestOverwriteDisabledPlainEnv(t *testing.T) {
 		"DB_ARGS=",
 	}
 
-	t.Run("should not overwrite env vars", func(t *testing.T) {
-		basePath := path.Dir("./../")
-		envFile := basePath + "/fixtures/cmd/devel.env"
-		psFile := basePath + "/fixtures/cmd/test.ps1"
+	basePath := path.Dir("./../")
 
-		// Set DB_PROTOCOL as UDP before running the script
-		if err := os.Setenv("DB_PROTOCOL", "udp"); err != nil {
-			assert.Error(t, err, "error setting DB_PROTOCOL environment variable")
+	envFile := basePath + "/fixtures/cmd/devel.env"
+	psFile := basePath + "/fixtures/cmd/test.ps1"
+
+	// Set DB_PROTOCOL as UDP before running the script
+	os.Setenv("DB_PROTOCOL", "udp")
+
+	cmd := exec.Command("go", "run", basePath+"/main.go", "-f", envFile, "powershell", "-ExecutionPolicy", "Bypass", "-File", psFile)
+
+	var out bytes.Buffer
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+
+	if err != nil {
+		t.Errorf("error trying to read the .env file.\n %s", err)
+	}
+
+	actual := strings.Split(out.String(), "\n")
+	for i, exp := range expected {
+		act := strings.TrimRight(actual[i], "\r")
+		if exp != act {
+			t.Errorf("actual: [%s] expected: [%s]", act, exp)
 		}
-
-		cmd := exec.Command(
-			"go", "run", basePath+"/main.go",
-			"-f", envFile,
-			"powershell", "-ExecutionPolicy", "Bypass", "-File", psFile,
-		)
-
-		var out bytes.Buffer
-		cmd.Stderr = os.Stderr
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = &out
-
-		if err := cmd.Run(); err != nil {
-			assert.Error(t, err, "error trying to read the .env file.")
-		}
-
-		actual := strings.Split(out.String(), "\n")
-		for i, exp := range expected {
-			act := strings.TrimRight(actual[i], "\r")
-			if exp != act {
-				assert.Equal(t, exp, act, "one or more env keys have wrong values")
-			}
-		}
-	})
+	}
 }
 
 func TestOverwriteEnabledPlainEnv(t *testing.T) {
@@ -122,37 +111,32 @@ func TestOverwriteEnabledPlainEnv(t *testing.T) {
 		"DB_ARGS=",
 	}
 
-	t.Run("should overwrite env vars", func(t *testing.T) {
-		basePath := path.Dir("./../")
-		envFile := basePath + "/fixtures/cmd/devel.env"
-		psFile := basePath + "/fixtures/cmd/test.ps1"
+	basePath := path.Dir("./../")
 
-		// Set DB_PROTOCOL as UDP before running the script
-		if err := os.Setenv("DB_PROTOCOL", "udp"); err != nil {
-			assert.Error(t, err, "error setting DB_PROTOCOL environment variable")
+	envFile := basePath + "/fixtures/cmd/devel.env"
+	psFile := basePath + "/fixtures/cmd/test.ps1"
+
+	// Set DB_PROTOCOL as UDP before running the script
+	os.Setenv("DB_PROTOCOL", "udp")
+
+	cmd := exec.Command("go", "run", basePath+"/main.go", "-w", "-f", envFile, "powershell", "-ExecutionPolicy", "Bypass", "-File", psFile)
+
+	var out bytes.Buffer
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+
+	if err != nil {
+		t.Errorf("error trying to read the .env file.\n %s", err)
+	}
+
+	actual := strings.Split(out.String(), "\n")
+	for i, exp := range expected {
+		act := strings.TrimRight(actual[i], "\r")
+		if exp != act {
+			t.Errorf("actual: [%s] expected: [%s]", act, exp)
 		}
-
-		cmd := exec.Command(
-			"go", "run", basePath+"/main.go",
-			"-w", "-f", envFile,
-			"powershell", "-ExecutionPolicy", "Bypass", "-File", psFile,
-		)
-
-		var out bytes.Buffer
-		cmd.Stderr = os.Stderr
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = &out
-
-		if err := cmd.Run(); err != nil {
-			assert.Error(t, err, "error trying to read the .env file.")
-		}
-
-		actual := strings.Split(out.String(), "\n")
-		for i, exp := range expected {
-			act := strings.TrimRight(actual[i], "\r")
-			if exp != act {
-				assert.Equal(t, exp, act, "one or more env keys have wrong values")
-			}
-		}
-	})
+	}
 }

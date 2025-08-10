@@ -33,7 +33,7 @@ func appHandler(ctx *cli.AppContext) error {
 		return err
 	}
 
-	// 1. Load a .env file if available
+	// file option
 	file, err := flags.String("file")
 	if err != nil {
 		return err
@@ -70,6 +70,27 @@ func appHandler(ctx *cli.AppContext) error {
 	overwrite, err := overwriteF.Value()
 	if err != nil {
 		return err
+	}
+
+	output, err := flags.String("output")
+	if err != nil {
+		return err
+	}
+
+	// chdir option
+	chdirPath := ""
+	chdir, err := flags.String("chdir")
+	if err != nil {
+		return err
+	}
+	if chdir.IsProvided() {
+		chdirPath = chdir.Value()
+		if err := fs.DirExists(chdirPath); err != nil {
+			return err
+		}
+		if err := os.Chdir(chdirPath); err != nil {
+			return fmt.Errorf("error: cannot change directory to '%s'.\n%v", chdirPath, err)
+		}
 	}
 
 	if stdin {
@@ -142,70 +163,48 @@ func appHandler(ctx *cli.AppContext) error {
 	}
 
 ContinueEnvProc:
-	// chdir option
-	chdirPath := ""
-	chdir, err := flags.String("chdir")
-	if err != nil {
-		return err
-	}
-	if chdir.IsProvided() {
-		chdirPath = chdir.Value()
-		if err := fs.DirExists(chdirPath); err != nil {
-			return err
-		}
-	}
-
 	tailArgs := ctx.TailArgs
 
-	// 2. Print all env variables in text format by default
 	totalFags := len(flags.GetProvided())
 	noFlags := totalFags == 0
 	hasTailArgs := len(tailArgs) > 0
 	hasNoArgs := noFlags && !hasTailArgs
 
 	if hasNoArgs {
-		fmt.Println(envVars.Text())
-		return nil
+		goto OutputEnvProc
 	}
 
-	// 3. Output
-	output, err := flags.String("output")
-	if err != nil {
-		return err
-	}
-
-	if output.IsProvided() {
-		if hasTailArgs {
+	// if tail args passed then execute the given command
+	if hasTailArgs {
+		if output.IsProvided() {
 			return fmt.Errorf("error: output format cannot be used when executing a command")
 		}
 
-		out := output.Value()
-		switch out {
-		case "text":
-			fmt.Println(envVars.Text())
-		case "json":
-			if buf, err := envVars.JSON(); err != nil {
-				return err
-			} else {
-				fmt.Println(string(buf))
-			}
-		case "xml":
-			if buf, err := envVars.XML(); err != nil {
-				return err
-			} else {
-				fmt.Println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + string(buf))
-			}
-		default:
-			if out == "" {
-				return fmt.Errorf("error: output format was empty or not provided")
-			}
-			return fmt.Errorf("error: output format '%s' is not supported", out)
-		}
+		return execCmd(tailArgs, chdirPath, newEnv, envVars)
 	}
 
-	// 4. Execute the given command if there is tail args passed
-	if hasTailArgs {
-		return execCmd(tailArgs, chdirPath, newEnv, envVars)
+OutputEnvProc:
+	out := output.Value()
+	switch out {
+	case "text":
+		fmt.Println(envVars.Text())
+	case "json":
+		if buf, err := envVars.JSON(); err != nil {
+			return err
+		} else {
+			fmt.Println(string(buf))
+		}
+	case "xml":
+		if buf, err := envVars.XML(); err != nil {
+			return err
+		} else {
+			fmt.Println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + string(buf))
+		}
+	default:
+		if out == "" {
+			return fmt.Errorf("error: output format was empty or not provided")
+		}
+		return fmt.Errorf("error: output format '%s' is not supported", out)
 	}
 
 	return nil
