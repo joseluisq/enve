@@ -339,12 +339,10 @@ func TestAppHandler_Output(t *testing.T) {
 			output := buf.Bytes()
 
 			if tt.expectedErr != nil {
-				assert.Error(t, runErr, "Expected error but got none for args %v", tt.args)
-				assert.Contains(
-					t, runErr.Error(), tt.expectedErr.Error(), "app.Run() with args %v failed: %v", tt.args, runErr,
-				)
+				assert.Error(t, runErr, "Expected error but got none")
+				assert.Contains(t, runErr.Error(), tt.expectedErr.Error(), "Error message mismatch")
 			} else {
-				assert.NoError(t, runErr, "app.Run() with args %v", tt.args)
+				assert.NoError(t, runErr, "Expected no error but got: %v", runErr)
 			}
 
 			if tt.expectedJSON != nil {
@@ -354,7 +352,7 @@ func TestAppHandler_Output(t *testing.T) {
 				}
 
 				ElementsContain(
-					t, vars.Env, tt.expectedJSON.Env, "JSON output should match to %#v", tt.expectedJSON,
+					t, vars.Env, tt.expectedJSON.Env, "JSON output should match to %v", tt.expectedJSON,
 				)
 			}
 
@@ -364,12 +362,12 @@ func TestAppHandler_Output(t *testing.T) {
 					assert.Fail(t, "Failed to unmarshal XML output: %v", err)
 				}
 				ElementsContain(
-					t, vars.Env, tt.expectedXML.Env, "XML output should match to %#v", tt.expectedXML,
+					t, vars.Env, tt.expectedXML.Env, "XML output should match to %v", tt.expectedXML,
 				)
 			}
 
 			for _, s := range tt.expectedText {
-				assert.Contains(t, string(output), s, "Output should contain %q", s)
+				assert.Contains(t, string(output), s, "Text output should contain %q", s)
 			}
 
 		})
