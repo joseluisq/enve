@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"reflect"
 	"slices"
@@ -20,24 +19,6 @@ import (
 )
 
 const defaultEnvFile = "devel.env"
-
-var baseDirPath = filepath.Join(path.Dir("./../"))
-var fixturePath = filepath.Join(baseDirPath, "fixtures", "handler")
-
-func newArgs(args []string) []string {
-	return append([]string{"enve-test"}, args...)
-}
-
-func newArgsWithFile(filename string, args []string) []string {
-	return newArgs(append(
-		[]string{"-f", filepath.Join(fixturePath, filename)},
-		args...,
-	))
-}
-
-func newArgsDefault(args []string) []string {
-	return newArgsWithFile(defaultEnvFile, args)
-}
 
 // ElementsContain asserts that all elements in listB are contained in listA.
 func ElementsContain(t assert.TestingT, listA any, listB any, msgAndArgs ...any) (ok bool) {
@@ -70,13 +51,37 @@ func ElementsContain(t assert.TestingT, listA any, listB any, msgAndArgs ...any)
 }
 
 func TestAppHandler_Output(t *testing.T) {
+	CWD, err := os.Getwd()
+	if err != nil {
+		assert.Fail(t, "Failed to get current working directory for tests", err)
+	}
+
+	var baseDirPath = filepath.Join(CWD, "../")
+	var fixturePath = filepath.Join(baseDirPath, "fixtures", "handler")
+
+	var newArgs = func(args []string) []string {
+		return append([]string{"enve-test"}, args...)
+	}
+
+	var newArgsWithFile = func(filename string, args []string) []string {
+		return newArgs(append(
+			[]string{"-f", filepath.Join(fixturePath, filename)},
+			args...,
+		))
+	}
+
+	var newArgsDefault = func(args []string) []string {
+		return newArgsWithFile(defaultEnvFile, args)
+	}
+
 	tests := []struct {
 		// Input
-		name string
-		args []string
+		name          string
+		args          []string
+		expectedStdin []byte
+		initialEnvs   []string
 
 		// Output
-		globalEnvs   []string
 		expectedText []string // []string{"HOST=127.0.0.1"}
 		expectedJSON *env.Environment
 		expectedXML  *env.Environment
@@ -109,7 +114,7 @@ func TestAppHandler_Output(t *testing.T) {
 		{
 			name: "should output variables as text",
 			args: newArgsDefault([]string{"--output", "text"}),
-			globalEnvs: []string{
+			initialEnvs: []string{
 				"API_URL=http://localhost:3000",
 			},
 			expectedText: []string{
@@ -123,7 +128,7 @@ func TestAppHandler_Output(t *testing.T) {
 		{
 			name: "should output variables as json",
 			args: newArgsDefault([]string{"--output", "json"}),
-			globalEnvs: []string{
+			initialEnvs: []string{
 				"SERVER_IP=192.168.1.1",
 			},
 			expectedJSON: &env.Environment{
@@ -139,7 +144,7 @@ func TestAppHandler_Output(t *testing.T) {
 		{
 			name: "should output variables as xml",
 			args: newArgsDefault([]string{"--output", "xml"}),
-			globalEnvs: []string{
+			initialEnvs: []string{
 				"SERVER2_IP=192.168.1.1",
 			},
 			expectedXML: &env.Environment{
@@ -184,7 +189,7 @@ func TestAppHandler_Output(t *testing.T) {
 		{
 			name: "should output variables with --no-file as text",
 			args: newArgsDefault([]string{"--no-file", "--output", "text"}),
-			globalEnvs: []string{
+			initialEnvs: []string{
 				"HOST=0.0.0.0",
 			},
 			expectedText: []string{"HOST=0.0.0.0"},
@@ -206,7 +211,7 @@ func TestAppHandler_Output(t *testing.T) {
 		{
 			name: "should overwrite variables and output as text",
 			args: newArgsDefault([]string{"--overwrite", "--output", "text"}),
-			globalEnvs: []string{
+			initialEnvs: []string{
 				"HOST=192.168.1.1",
 			},
 			expectedText: []string{"HOST=127.0.0.1"},
@@ -214,7 +219,7 @@ func TestAppHandler_Output(t *testing.T) {
 		{
 			name: "should overwrite variables and output as xml",
 			args: newArgsDefault([]string{"--overwrite", "--output", "xml"}),
-			globalEnvs: []string{
+			initialEnvs: []string{
 				"HOST=192.168.1.1",
 			},
 			expectedXML: &env.Environment{
@@ -226,7 +231,7 @@ func TestAppHandler_Output(t *testing.T) {
 		{
 			name: "should overwrite variables and output as json",
 			args: newArgsDefault([]string{"--overwrite", "--output", "json"}),
-			globalEnvs: []string{
+			initialEnvs: []string{
 				"LOG_LEVEL=error",
 			},
 			expectedJSON: &env.Environment{
@@ -271,11 +276,83 @@ func TestAppHandler_Output(t *testing.T) {
 				},
 			},
 		},
-	}
-
-	CWD, err := os.Getwd()
-	if err != nil {
-		assert.Fail(t, "Failed to get current working directory for tests: %v", err)
+		{
+			name:        "should return error if env file does not exist",
+			args:        newArgs([]string{"--file", fixturePath + "-xyz", "-o", "json"}),
+			expectedErr: fmt.Errorf("error: cannot access file '%s-xyz'.", fixturePath),
+		},
+		{
+			name:        "should return error if env file cannot be parsed",
+			args:        newArgsWithFile("invalid.env", []string{}),
+			expectedErr: fmt.Errorf("error: cannot load env from file."),
+		},
+		{
+			name: "should output variables as text when using stdin without initial ones",
+			args: newArgs([]string{"--stdin"}),
+			expectedStdin: []byte(
+				"SERVER=localhost\nIP=192.168.1.120\nLEVEL=info\nAPP_URL=https://localhost",
+			),
+			expectedText: []string{
+				"SERVER=localhost",
+				"IP=192.168.1.120",
+				"LEVEL=info",
+				"APP_URL=https://localhost",
+			},
+		},
+		{
+			name: "should output variables as text when using stdin with initial ones",
+			args: newArgs([]string{"--stdin"}),
+			initialEnvs: []string{
+				"SERVER=127.0.0.1",
+			},
+			expectedStdin: []byte(
+				"SERVER=localhost\nIP=192.168.1.120\nLEVEL=info\nAPP_URL=https://localhost",
+			),
+			expectedText: []string{
+				"SERVER=127.0.0.1",
+				"IP=192.168.1.120",
+				"LEVEL=info",
+				"APP_URL=https://localhost",
+			},
+		},
+		{
+			name: "should output overwritten variables as json when using stdin",
+			args: newArgs([]string{"--stdin", "--overwrite", "-o", "json"}),
+			expectedStdin: []byte(
+				"NAME=User\nEMAIL=user@example.com\nAGE=30",
+			),
+			expectedJSON: &env.Environment{
+				Env: []env.EnvironmentVar{
+					{Name: "NAME", Value: "User"},
+					{Name: "EMAIL", Value: "user@example.com"},
+					{Name: "AGE", Value: "30"},
+				},
+			},
+		},
+		{
+			name: "should output overwritten variables as xml when using stdin",
+			args: newArgs([]string{"--stdin", "--overwrite", "-o", "xml"}),
+			expectedStdin: []byte(
+				"NAME=Gopher\nEMAIL=ghoper@example.com\nAGE=100",
+			),
+			expectedXML: &env.Environment{
+				Env: []env.EnvironmentVar{
+					{Name: "NAME", Value: "Gopher"},
+					{Name: "EMAIL", Value: "ghoper@example.com"},
+					{Name: "AGE", Value: "100"},
+				},
+			},
+		},
+		{
+			name:        "should return an error invalid output format",
+			args:        newArgs([]string{"--output", "xyz"}),
+			expectedErr: fmt.Errorf("error: output format 'xyz' is not supported"),
+		},
+		{
+			name:        "should return an error empty output value",
+			args:        newArgs([]string{"--output", ""}),
+			expectedErr: fmt.Errorf("error: output format was empty or not provided"),
+		},
 	}
 
 	for _, tt := range tests {
@@ -295,16 +372,33 @@ func TestAppHandler_Output(t *testing.T) {
 			app.Flags = Flags
 			app.Handler = appHandler
 
-			if tt.globalEnvs != nil {
-				for _, envVar := range tt.globalEnvs {
-					parts := bytes.SplitN([]byte(envVar), []byte{'='}, 2)
+			if tt.initialEnvs != nil {
+				for _, envVar := range tt.initialEnvs {
+					parts := strings.SplitN(envVar, "=", 2)
 					if len(parts) == 2 {
-						if err := os.Setenv(string(parts[0]), string(parts[1])); err != nil {
-							assert.Fail(t, "Failed to set environment variable %s: %v", envVar, err)
-						}
+						t.Setenv(parts[0], parts[1])
 					} else {
-						assert.Fail(t, "Invalid environment variable format: %s", envVar)
+						assert.Fail(t, "Invalid environment variable format", envVar)
 					}
+				}
+			}
+
+			// Capture stdin
+			if tt.expectedStdin != nil {
+				oldStdin := os.Stdin
+				r1, w1, err := os.Pipe()
+				if err != nil {
+					assert.Fail(t, "Failed to create pipe for stdin", err)
+				}
+				os.Stdin = r1
+
+				defer func() { os.Stdin = oldStdin }()
+
+				if _, err := w1.Write(tt.expectedStdin); err != nil {
+					assert.Fail(t, "Failed to write to stdin pipe", err)
+				}
+				if err := w1.Close(); err != nil {
+					assert.Fail(t, "Failed to write to stdin pipe", err)
 				}
 			}
 
@@ -312,7 +406,7 @@ func TestAppHandler_Output(t *testing.T) {
 			oldStdout := os.Stdout
 			r, w, err := os.Pipe()
 			if err != nil {
-				assert.Fail(t, "Failed to create pipe for stdout capture: %v", err)
+				assert.Fail(t, "Failed to create pipe for stdout capture", err)
 			}
 			os.Stdout = w
 
@@ -348,7 +442,7 @@ func TestAppHandler_Output(t *testing.T) {
 			if tt.expectedJSON != nil {
 				var vars env.Environment
 				if err := json.Unmarshal(output, &vars); err != nil {
-					assert.Fail(t, "Failed to unmarshal JSON output: %v", err)
+					assert.Fail(t, "Failed to unmarshal JSON output", err)
 				}
 
 				ElementsContain(
@@ -359,7 +453,7 @@ func TestAppHandler_Output(t *testing.T) {
 			if tt.expectedXML != nil {
 				var vars env.Environment
 				if err := xml.Unmarshal(output, &vars); err != nil {
-					assert.Fail(t, "Failed to unmarshal XML output: %v", err)
+					assert.Fail(t, "Failed to unmarshal XML output", err)
 				}
 				ElementsContain(
 					t, vars.Env, tt.expectedXML.Env, "XML output should match to %v", tt.expectedXML,
@@ -369,7 +463,6 @@ func TestAppHandler_Output(t *testing.T) {
 			for _, s := range tt.expectedText {
 				assert.Contains(t, string(output), s, "Text output should contain %q", s)
 			}
-
 		})
 	}
 }

@@ -155,7 +155,7 @@ func appHandler(ctx *cli.AppContext) error {
 				if overwrite {
 					str = " (overwrite)"
 				}
-				return fmt.Errorf("error: cannot load env from file '%s'.\n%v", str, err)
+				return fmt.Errorf("error: cannot load env from file%s.\n%v", str, err)
 			}
 
 			envVars = env.Slice(os.Environ())
