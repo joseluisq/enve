@@ -3,7 +3,6 @@ package env
 import (
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"strings"
 )
 
@@ -13,33 +12,23 @@ func (e Slice) Text() string {
 	return strings.Join(e, "\n")
 }
 
-func (e Slice) Environ() (environ Environment, err error) {
-	str := ""
-	for i, s := range e {
-		pairs := strings.SplitN(s, "=", 2)
-		sep := ""
-		if i < len(e)-1 {
-			sep = ","
+func (e Slice) Environ() Environment {
+	var environ Environment
+	for _, s := range e {
+		// NOTE: skip non-key=value pair
+		pair := strings.SplitN(s, "=", 2)
+		if len(pair) < 2 {
+			continue
 		}
-		val := strings.ReplaceAll(pairs[1], "\"", "\\\"")
-		val = strings.ReplaceAll(val, "\n", "\\n")
-		val = strings.ReplaceAll(val, "\\", "\\\\")
-		val = strings.ReplaceAll(val, "\r", "\\r")
-		str += fmt.Sprintf("{\"name\":\"%s\",\"value\":\"%s\"}%s", pairs[0], val, sep)
+		v := EnvironmentVar{Name: pair[0], Value: pair[1]}
+		environ.Env = append(environ.Env, v)
 	}
-	jsonb := []byte("{\"environment\":[" + str + "]}")
-	if err := json.Unmarshal(jsonb, &environ); err != nil {
-		return environ, err
-	}
-	return environ, nil
+	return environ
 }
 
 func (e Slice) JSON() ([]byte, error) {
-	jsonenv, err := e.Environ()
-	if err != nil {
-		return []byte(nil), err
-	}
-	jsonb, err := json.Marshal(jsonenv)
+	environ := e.Environ()
+	jsonb, err := json.Marshal(environ)
 	if err != nil {
 		return []byte(nil), err
 	}
@@ -47,11 +36,8 @@ func (e Slice) JSON() ([]byte, error) {
 }
 
 func (e Slice) XML() ([]byte, error) {
-	jsonenv, err := e.Environ()
-	if err != nil {
-		return []byte(nil), err
-	}
-	xmlb, err := xml.Marshal(jsonenv)
+	environ := e.Environ()
+	xmlb, err := xml.Marshal(environ)
 	if err != nil {
 		return []byte(nil), err
 	}

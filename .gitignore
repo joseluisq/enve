@@ -11,3 +11,5 @@ vendor
 .DS_Store
 
 dist/
+
+!fixtures/handler/.env

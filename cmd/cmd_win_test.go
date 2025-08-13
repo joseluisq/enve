@@ -28,8 +28,8 @@ func TestPlainEnv(t *testing.T) {
 
 	basePath := path.Dir("./../")
 
-	envFile := basePath + "/fixtures/plain.env"
-	psFile := basePath + "/fixtures/test.ps1"
+	envFile := basePath + "/fixtures/cmd/devel.env"
+	psFile := basePath + "/fixtures/cmd/test.ps1"
 
 	cmd := exec.Command("go", "run", basePath+"/main.go", "-f", envFile, "powershell", "-ExecutionPolicy", "Bypass", "-File", psFile)
 
@@ -69,8 +69,8 @@ func TestOverwriteDisabledPlainEnv(t *testing.T) {
 
 	basePath := path.Dir("./../")
 
-	envFile := basePath + "/fixtures/plain.env"
-	psFile := basePath + "/fixtures/test.ps1"
+	envFile := basePath + "/fixtures/cmd/devel.env"
+	psFile := basePath + "/fixtures/cmd/test.ps1"
 
 	// Set DB_PROTOCOL as UDP before running the script
 	os.Setenv("DB_PROTOCOL", "udp")
@@ -113,8 +113,8 @@ func TestOverwriteEnabledPlainEnv(t *testing.T) {
 
 	basePath := path.Dir("./../")
 
-	envFile := basePath + "/fixtures/plain.env"
-	psFile := basePath + "/fixtures/test.ps1"
+	envFile := basePath + "/fixtures/cmd/devel.env"
+	psFile := basePath + "/fixtures/cmd/test.ps1"
 
 	// Set DB_PROTOCOL as UDP before running the script
 	os.Setenv("DB_PROTOCOL", "udp")
