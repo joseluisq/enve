@@ -1,4 +1,4 @@
-# Enve ![devel](https://github.com/joseluisq/enve/workflows/devel/badge.svg)
+# Enve ![devel](https://github.com/joseluisq/enve/workflows/devel/badge.svg) [![codecov](https://codecov.io/gh/joseluisq/enve/graph/badge.svg?token=U77DXS42C6)](https://codecov.io/gh/joseluisq/enve) [![Go Report Card](https://goreportcard.com/badge/github.com/joseluisq/enve)](https://goreportcard.com/report/github.com/joseluisq/enve)
 
 > Run a program in a modified environment providing an optional `.env` file or variables from `stdin`.
 
@@ -6,7 +6,7 @@
 
 It also allows you to output environment variables in `text`, `json` or `xml` format as well as to overwrite existing ones with values from a custom `.env` file or `stdin`.
 
-It can be considered as a counterpart of [GNU env](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html) command.
+Enve can be considered as a counterpart of [GNU env](https://www.gnu.org/software/coreutils/manual/html_node/env-invocation.html) command.
 
 ## Install
 
@@ -47,7 +47,7 @@ enve test.sh
 
 ## Options
 
-### `-f, --file`
+#### `-f, --file`
 
 Loads environment variables from a specific file path.
 By default, `enve` will look for a file named `.env` in the current directory.
@@ -59,7 +59,7 @@ enve test.sh
 enve --file dev.env test.sh
 ```
 
-### `-o, --output`
+#### `-o, --output`
 
 Outputs all environment variables in a specified format.
 
@@ -75,7 +75,7 @@ enve -o xml > config.xml
 enve -o json > config.json
 ```
 
-### `-w, --overwrite`
+#### `-w, --overwrite`
 
 Overwrites existing environment variables with values from the `.env` file or stdin.
 
@@ -88,7 +88,7 @@ enve --overwrite -f .env ./tests.sh
 echo -e "API_URL=http://127.0.0.1:4000" | enve --stdin -w -o text
 ```
 
-### `-c, --chdir`
+#### `-c, --chdir`
 
 Changes the current working directory before executing the command.
 
@@ -97,7 +97,7 @@ Changes the current working directory before executing the command.
 enve --chdir /opt/my-app ./test.sh
 ```
 
-### `-n, --new-environment`
+#### `-n, --new-environment`
 
 Starts a new environment containing only variables from either a `.env` file or stdin.
 
@@ -109,7 +109,7 @@ enve --new-environment -f devel.env ./test.sh
 echo -e "APP_HOST=localhost\nAPP_PORT=8080" | enve --stdin -n test.sh
 ```
 
-### `-s, --stdin`
+#### `-s, --stdin`
 
 Reads environment variables from the standard input (stdin) instead of a file.
 When using `--stdin`, the `.env` file is ignored.
@@ -120,7 +120,7 @@ cat development.env | enve --stdin ./my_script.sh
 echo -e "APP_HOST=127.0.0.1" | enve -s test.sh
 ```
 
-### `-i, --ignore-environment`
+#### `-i, --ignore-environment`
 
 Starts with an empty environment skipping any existing environment variables.
 
@@ -132,7 +132,7 @@ echo -e "APP_HOST=127.0.0.1" | enve -i --stdin -o json
 # {"environment":[]}
 ```
 
-### `-z, --no-file`
+#### `-z, --no-file`
 
 Prevents `enve` from loading any `.env` file, printing or running a command only with the existing environment.
 
@@ -144,7 +144,7 @@ enve --no-file my_app
 enve -z
 ```
 
-### `-h, --help`
+#### `-h, --help`
 
 ```
 Run a program in a modified environment providing an optional .env file or variables from stdin
