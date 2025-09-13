@@ -21,6 +21,7 @@ jobs:
         go:
           - 1.23.x
           - 1.24.x
+          - 1.25.x
         os:
           - ubuntu-22.04
           - ubuntu-22.04-arm
