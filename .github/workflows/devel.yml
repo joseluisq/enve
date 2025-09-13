@@ -49,7 +49,14 @@ jobs:
           cache-key: ${{ matrix.go }}
       - name: Tests
         run: |
-          go test ./... -v -timeout 30s -covermode=atomic
+          go test ./... -v -timeout 30s -coverprofile=coverage.txt -covermode=atomic
+      - name: Coverage
+        uses: codecov/codecov-action@v5
+        with:
+          flags: unittests
+          verbose: true
+          name: codecov-enve
+          token: ${{ secrets.CODECOV_TOKEN }}
       - name: Build
         shell: bash
         run: |

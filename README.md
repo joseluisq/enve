@@ -1,4 +1,4 @@
-# Enve ![devel](https://github.com/joseluisq/enve/workflows/devel/badge.svg)
+# Enve ![devel](https://github.com/joseluisq/enve/workflows/devel/badge.svg) [![codecov](https://codecov.io/gh/joseluisq/enve/graph/badge.svg?token=U77DXS42C6)](https://codecov.io/gh/joseluisq/enve) [![Go Report Card](https://goreportcard.com/badge/github.com/joseluisq/enve)](https://goreportcard.com/report/github.com/joseluisq/enve)
 
 > Run a program in a modified environment providing an optional `.env` file or variables from `stdin`.
 
