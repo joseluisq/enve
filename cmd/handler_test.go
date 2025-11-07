@@ -13,9 +13,11 @@ import (
 	"strings"
 	"testing"
 
-	cli "github.com/joseluisq/cline"
-	"github.com/joseluisq/enve/env"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/joseluisq/cline/app"
+	"github.com/joseluisq/cline/handler"
+	"github.com/joseluisq/enve/env"
 )
 
 const defaultEnvFile = "devel.env"
@@ -365,12 +367,12 @@ func TestAppHandler_Output(t *testing.T) {
 			}
 
 			// Setup app
-			app := cli.New()
-			app.Name = "enve-test"
-			app.Summary = "Run a program in a modified environment"
-			app.Version = "v1.0.0-beta.1"
-			app.Flags = Flags
-			app.Handler = appHandler
+			ap := app.New()
+			ap.Name = "enve-test"
+			ap.Summary = "Run a program in a modified environment"
+			ap.Version = "v1.0.0-beta.1"
+			ap.Flags = Flags
+			ap.Handler = appHandler
 
 			if tt.initialEnvs != nil {
 				for _, envVar := range tt.initialEnvs {
@@ -424,7 +426,7 @@ func TestAppHandler_Output(t *testing.T) {
 			}()
 
 			t.Logf("  Running app as '%v'", strings.Join(tt.args, " "))
-			runErr := app.Run(tt.args)
+			runErr := handler.New(ap).Run(tt.args)
 
 			// Close the pipe's writer end to unblock the `io.Copy` in the goroutine above
 			_ = w.Close()

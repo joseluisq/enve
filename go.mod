@@ -1,11 +1,11 @@
 module github.com/joseluisq/enve
 
-go 1.21
+go 1.23.0
 
 require (
 	github.com/joho/godotenv v1.5.1
-	github.com/joseluisq/cline v0.1.0
-	github.com/stretchr/testify v1.10.0
+	github.com/joseluisq/cline v1.0.0-beta.4
+	github.com/stretchr/testify v1.11.1
 )
 
 require (
