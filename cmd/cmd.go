@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/joseluisq/cline/app"
 	"github.com/joseluisq/cline/handler"
 )
@@ -16,7 +13,7 @@ var (
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.
-func Execute() {
+func Execute(args []string) error {
 	ap := app.New()
 	ap.Name = "enve"
 	ap.Summary = "Run a program in a modified environment providing an optional .env file or variables from stdin"
@@ -26,8 +23,5 @@ func Execute() {
 	ap.Flags = Flags
 	ap.Handler = appHandler
 
-	if err := handler.New(ap).Run(os.Args); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
+	return handler.New(ap).Run(args)
 }

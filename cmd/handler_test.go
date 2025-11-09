@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -318,6 +319,18 @@ func TestAppHandler_Output(t *testing.T) {
 			},
 		},
 		{
+			name:          "should return error when invalid using stdin",
+			args:          newArgs([]string{"--stdin"}),
+			expectedStdin: []byte("\x00"),
+			expectedErr:   errors.New("error: cannot load env from stdin.\nunexpected character \"\\x00\" in variable name near \"\\x00\""),
+		},
+		{
+			name:          "should return error when invalid using stdin with overwrite",
+			args:          newArgs([]string{"--stdin", "--overwrite"}),
+			expectedStdin: []byte("\x00"),
+			expectedErr:   errors.New("error: cannot load env from stdin (overwrite).\nunexpected character \"\\x00\" in variable name near \"\\x00\""),
+		},
+		{
 			name: "should output overwritten variables as json when using stdin",
 			args: newArgs([]string{"--stdin", "--overwrite", "-o", "json"}),
 			expectedStdin: []byte(
@@ -344,6 +357,38 @@ func TestAppHandler_Output(t *testing.T) {
 					{Name: "AGE", Value: "100"},
 				},
 			},
+		},
+		{
+			name: "should output variables as text when using stdin with new environment",
+			args: newArgs([]string{"--stdin", "--new-environment"}),
+			initialEnvs: []string{
+				"SERVER=127.0.0.1",
+			},
+			expectedStdin: []byte(
+				"SERVER=localhost\nIP=192.168.1.120\nLEVEL=info\nAPP_URL=https://localhost",
+			),
+			expectedText: []string{
+				"SERVER=localhost",
+				"IP=192.168.1.120",
+				"LEVEL=info",
+				"APP_URL=https://localhost",
+			},
+		},
+		{
+			name: "should output variables as text when using stdin with new environment and overwrite",
+			args: newArgs([]string{"--stdin", "--new-environment", "--overwrite", "--ignore-environment"}),
+			expectedStdin: []byte(
+				"IP=192.168.1.120\nLEVEL=info\nAPP_URL=https://localhost",
+			),
+		},
+		{
+			name: "should return error when invalid using stdin with new environment",
+			args: newArgs([]string{"--stdin", "--new-environment", "-o", "json"}),
+			initialEnvs: []string{
+				"SERVER=127.0.0.1",
+			},
+			expectedStdin: []byte("\x00"),
+			expectedErr:   errors.New("unexpected character \"\\x00\" in variable name near \"\\x00\""),
 		},
 		{
 			name:        "should return an error invalid output format",
