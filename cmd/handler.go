@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"os"
 
-	cli "github.com/joseluisq/cline"
+	"github.com/joseluisq/cline/app"
 
 	"github.com/joseluisq/enve/env"
 	"github.com/joseluisq/enve/fs"
 )
 
-func appHandler(ctx *cli.AppContext) error {
-	var flags = ctx.Flags
+func appHandler(ctx *app.AppContext) error {
+	var flags = ctx.Flags()
 
 	// ignore-environment option
 	ignoreEnvF, err := flags.Bool("ignore-environment")
@@ -163,7 +163,7 @@ func appHandler(ctx *cli.AppContext) error {
 	}
 
 ContinueEnvProc:
-	tailArgs := ctx.TailArgs
+	tailArgs := ctx.TailArgs()
 
 	totalFags := len(flags.GetProvided())
 	noFlags := totalFags == 0

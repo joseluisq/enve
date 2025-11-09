@@ -5,6 +5,8 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path"
@@ -127,4 +129,54 @@ func TestOverwriteEnabledPlainEnv(t *testing.T) {
 		actual := strings.Trim(out.String(), "\n")
 		assert.Equal(t, expected, actual, "one or more env keys have wrong values")
 	})
+}
+
+const maxArgsCount = 1024
+
+func TestExecute(t *testing.T) {
+	basePath := path.Dir("./../")
+	envFile := basePath + "/fixtures/cmd/devel.env"
+
+	tests := []struct {
+		name        string
+		vargs       []string
+		expectedErr error
+	}{
+		{
+			name: "should return error for too many arguments",
+			vargs: func() []string {
+				// Create a slice with more arguments than the allowed maximum
+				args := make([]string, maxArgsCount+2)
+				args[0] = "app"
+				for i := 1; i < len(args); i++ {
+					args[i] = "arg"
+				}
+				return args
+			}(),
+			expectedErr: fmt.Errorf("error: number of arguments exceeds the limit of %d", maxArgsCount),
+		},
+		{
+			name:        "should return error for non-existent file",
+			expectedErr: errors.New("error: cannot access file '.env'.\nstat .env: no such file or directory"),
+		},
+		{
+			name:        "should return error for non-existent command",
+			vargs:       []string{"app", "--file", envFile, "notfoundcmd"},
+			expectedErr: errors.New("error: executable 'notfoundcmd' was not found.\nexec: \"notfoundcmd\": executable file not found in $PATH"),
+		},
+		{
+			name:  "should execute command successfully",
+			vargs: []string{"app", "--no-file", "pwd"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := Execute(tt.vargs); tt.expectedErr != nil {
+				assert.Error(t, err, "error was not expected but got one")
+				assert.Equal(t, err.Error(), tt.expectedErr.Error(), "Error message does not match the expected one")
+			} else {
+				assert.NoError(t, err, "unexpected error but got none")
+			}
+		})
+	}
 }

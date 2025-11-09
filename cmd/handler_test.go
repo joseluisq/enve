@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -13,9 +14,11 @@ import (
 	"strings"
 	"testing"
 
-	cli "github.com/joseluisq/cline"
-	"github.com/joseluisq/enve/env"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/joseluisq/cline/app"
+	"github.com/joseluisq/cline/handler"
+	"github.com/joseluisq/enve/env"
 )
 
 const defaultEnvFile = "devel.env"
@@ -316,6 +319,18 @@ func TestAppHandler_Output(t *testing.T) {
 			},
 		},
 		{
+			name:          "should return error when invalid using stdin",
+			args:          newArgs([]string{"--stdin"}),
+			expectedStdin: []byte("\x00"),
+			expectedErr:   errors.New("error: cannot load env from stdin.\nunexpected character \"\\x00\" in variable name near \"\\x00\""),
+		},
+		{
+			name:          "should return error when invalid using stdin with overwrite",
+			args:          newArgs([]string{"--stdin", "--overwrite"}),
+			expectedStdin: []byte("\x00"),
+			expectedErr:   errors.New("error: cannot load env from stdin (overwrite).\nunexpected character \"\\x00\" in variable name near \"\\x00\""),
+		},
+		{
 			name: "should output overwritten variables as json when using stdin",
 			args: newArgs([]string{"--stdin", "--overwrite", "-o", "json"}),
 			expectedStdin: []byte(
@@ -344,6 +359,38 @@ func TestAppHandler_Output(t *testing.T) {
 			},
 		},
 		{
+			name: "should output variables as text when using stdin with new environment",
+			args: newArgs([]string{"--stdin", "--new-environment"}),
+			initialEnvs: []string{
+				"SERVER=127.0.0.1",
+			},
+			expectedStdin: []byte(
+				"SERVER=localhost\nIP=192.168.1.120\nLEVEL=info\nAPP_URL=https://localhost",
+			),
+			expectedText: []string{
+				"SERVER=localhost",
+				"IP=192.168.1.120",
+				"LEVEL=info",
+				"APP_URL=https://localhost",
+			},
+		},
+		{
+			name: "should output variables as text when using stdin with new environment and overwrite",
+			args: newArgs([]string{"--stdin", "--new-environment", "--overwrite", "--ignore-environment"}),
+			expectedStdin: []byte(
+				"IP=192.168.1.120\nLEVEL=info\nAPP_URL=https://localhost",
+			),
+		},
+		{
+			name: "should return error when invalid using stdin with new environment",
+			args: newArgs([]string{"--stdin", "--new-environment", "-o", "json"}),
+			initialEnvs: []string{
+				"SERVER=127.0.0.1",
+			},
+			expectedStdin: []byte("\x00"),
+			expectedErr:   errors.New("unexpected character \"\\x00\" in variable name near \"\\x00\""),
+		},
+		{
 			name:        "should return an error invalid output format",
 			args:        newArgs([]string{"--output", "xyz"}),
 			expectedErr: fmt.Errorf("error: output format 'xyz' is not supported"),
@@ -365,12 +412,12 @@ func TestAppHandler_Output(t *testing.T) {
 			}
 
 			// Setup app
-			app := cli.New()
-			app.Name = "enve-test"
-			app.Summary = "Run a program in a modified environment"
-			app.Version = "v1.0.0-beta.1"
-			app.Flags = Flags
-			app.Handler = appHandler
+			ap := app.New()
+			ap.Name = "enve-test"
+			ap.Summary = "Run a program in a modified environment"
+			ap.Version = "v1.0.0-beta.1"
+			ap.Flags = Flags
+			ap.Handler = appHandler
 
 			if tt.initialEnvs != nil {
 				for _, envVar := range tt.initialEnvs {
@@ -424,7 +471,7 @@ func TestAppHandler_Output(t *testing.T) {
 			}()
 
 			t.Logf("  Running app as '%v'", strings.Join(tt.args, " "))
-			runErr := app.Run(tt.args)
+			runErr := handler.New(ap).Run(tt.args)
 
 			// Close the pipe's writer end to unblock the `io.Copy` in the goroutine above
 			_ = w.Close()
