@@ -9,7 +9,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -19,39 +18,10 @@ import (
 	"github.com/joseluisq/cline/app"
 	"github.com/joseluisq/cline/handler"
 	"github.com/joseluisq/enve/env"
+	"github.com/joseluisq/enve/helpers"
 )
 
 const defaultEnvFile = "devel.env"
-
-// ElementsContain asserts that all elements in listB are contained in listA.
-func ElementsContain(t assert.TestingT, listA any, listB any, msgAndArgs ...any) (ok bool) {
-	aVal := reflect.ValueOf(listA)
-	bVal := reflect.ValueOf(listB)
-
-	if aVal.Kind() != reflect.Slice || bVal.Kind() != reflect.Slice {
-		return assert.Fail(t, "ElementsContain only accepts slice arguments", msgAndArgs...)
-	}
-
-	// Build multiset for listA
-	counts := make(map[any]int)
-	for i := 0; i < aVal.Len(); i++ {
-		val := aVal.Index(i).Interface()
-		counts[val]++
-	}
-
-	// Check that each element in listB is present in listA
-	for i := 0; i < bVal.Len(); i++ {
-		val := bVal.Index(i).Interface()
-		if counts[val] == 0 {
-			return assert.Fail(
-				t, fmt.Sprintf("Expected element %+v not found in listA: %+v", val, listA), msgAndArgs...,
-			)
-		}
-		counts[val]--
-	}
-
-	return true
-}
 
 func TestAppHandler_Output(t *testing.T) {
 	CWD, err := os.Getwd()
@@ -492,7 +462,7 @@ func TestAppHandler_Output(t *testing.T) {
 					assert.Fail(t, "Failed to unmarshal JSON output", err)
 				}
 
-				ElementsContain(
+				helpers.ElementsContain(
 					t, vars.Env, tt.expectedJSON.Env, "JSON output should match to %v", tt.expectedJSON,
 				)
 			}
@@ -502,7 +472,7 @@ func TestAppHandler_Output(t *testing.T) {
 				if err := xml.Unmarshal(output, &vars); err != nil {
 					assert.Fail(t, "Failed to unmarshal XML output", err)
 				}
-				ElementsContain(
+				helpers.ElementsContain(
 					t, vars.Env, tt.expectedXML.Env, "XML output should match to %v", tt.expectedXML,
 				)
 			}
