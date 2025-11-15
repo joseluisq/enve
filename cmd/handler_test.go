@@ -21,7 +21,8 @@ import (
 	"github.com/joseluisq/enve/helpers"
 )
 
-const defaultEnvFile = "devel.env"
+const validEnvFile = "valid.env"
+const invalidEnvFile = "invalid.env"
 
 func TestAppHandler_Output(t *testing.T) {
 	CWD, err := os.Getwd()
@@ -43,8 +44,12 @@ func TestAppHandler_Output(t *testing.T) {
 		))
 	}
 
+	var newArgsDefaultInvalid = func(args []string) []string {
+		return newArgsWithFile(invalidEnvFile, args)
+	}
+
 	var newArgsDefault = func(args []string) []string {
-		return newArgsWithFile(defaultEnvFile, args)
+		return newArgsWithFile(validEnvFile, args)
 	}
 
 	tests := []struct {
@@ -216,7 +221,7 @@ func TestAppHandler_Output(t *testing.T) {
 		{
 			name:        "should return error if env file does not exist in new working dir",
 			args:        newArgs([]string{"--chdir", "./cmd", "--output", "text"}),
-			expectedErr: fmt.Errorf("error: cannot access directory './cmd'."),
+			expectedErr: errors.New("error: cannot access directory './cmd'."),
 		},
 		{
 			name: "should output variables if env file exist in new working dir",
@@ -256,8 +261,13 @@ func TestAppHandler_Output(t *testing.T) {
 		},
 		{
 			name:        "should return error if env file cannot be parsed",
-			args:        newArgsWithFile("invalid.env", []string{}),
-			expectedErr: fmt.Errorf("error: cannot load env from file."),
+			args:        newArgsDefaultInvalid([]string{}),
+			expectedErr: errors.New("error: cannot load env from file."),
+		},
+		{
+			name:        "should return error if env file cannot be parsed with overwrite",
+			args:        newArgsDefaultInvalid([]string{"--overwrite"}),
+			expectedErr: errors.New("error: cannot load env from file (overwrite)."),
 		},
 		{
 			name: "should output variables as text when using stdin without initial ones",
@@ -361,14 +371,29 @@ func TestAppHandler_Output(t *testing.T) {
 			expectedErr:   errors.New("unexpected character \"\\x00\" in variable name near \"\\x00\""),
 		},
 		{
+			name:        "should return error when invalid new environment parsing",
+			args:        newArgsDefaultInvalid([]string{"--new-environment", "-o", "json"}),
+			expectedErr: errors.New("unexpected character \"{\" in variable name near \""),
+		},
+		{
 			name:        "should return an error invalid output format",
 			args:        newArgs([]string{"--output", "xyz"}),
-			expectedErr: fmt.Errorf("error: output format 'xyz' is not supported"),
+			expectedErr: errors.New("error: output format 'xyz' is not supported"),
 		},
 		{
 			name:        "should return an error empty output value",
 			args:        newArgs([]string{"--output", ""}),
-			expectedErr: fmt.Errorf("error: output format was empty or not provided"),
+			expectedErr: errors.New("error: output format was empty or not provided"),
+		},
+		{
+			name:        "should return an error when using output with tail command",
+			args:        newArgs([]string{"--output", "text", "echo", "hello"}),
+			expectedErr: errors.New("error: output format cannot be used when executing a command"),
+		},
+		{
+			name:         "should return empty when has no args",
+			args:         newArgs([]string{}),
+			expectedText: []string{},
 		},
 	}
 
