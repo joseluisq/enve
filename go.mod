@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	github.com/joho/godotenv v1.5.1
-	github.com/joseluisq/cline v1.0.0-beta.4
+	github.com/joseluisq/cline v1.0.0-beta.5
 	github.com/stretchr/testify v1.11.1
 )
 
