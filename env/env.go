@@ -1,3 +1,4 @@
+// Package env provides functionality to load and parse environment variables from files or readers.
 package env
 
 import (

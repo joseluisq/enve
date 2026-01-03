@@ -131,7 +131,7 @@ func TestOverwriteEnabledPlainEnv(t *testing.T) {
 	})
 }
 
-const maxArgsCount = 1024
+const maxArgsCount = 128
 
 func TestExecute(t *testing.T) {
 	basePath := path.Dir("./../")
