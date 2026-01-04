@@ -15,7 +15,7 @@ Enve can be considered as a counterpart of [GNU env](https://www.gnu.org/softwar
 
 ```sh
 curl -sSL \
-   "https://github.com/joseluisq/enve/releases/download/v1.5.1/enve_v1.5.1_linux_amd64.tar.gz" \
+   "https://github.com/joseluisq/enve/releases/download/v1.6.0/enve_v1.6.0_linux_amd64.tar.gz" \
    | sudo tar zxf - -C /usr/local/bin/ enve
 ```
 
@@ -29,7 +29,7 @@ Pre-compiled binaries also available on [joseluisq/enve/releases](https://github
 
 ## Usage
 
-By default, **enve** will print all environment variables like `env` command. 
+By default, **enve** will print all environment variables like `env` command.
 
 ```sh
 enve
